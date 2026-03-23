@@ -1,0 +1,177 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
+@import "tailwindcss";
+
+/* ============================================================
+   VANIKARA — Tailwind v4 Theme & Global Styles (Light)
+   ============================================================ */
+
+@theme {
+  /* Brand Colors */
+  --color-brand-blue:        #1E6BD6;
+  --color-brand-blue-dark:   #1B2A4A;
+  --color-brand-blue-light:  #3b82f6;
+  --color-brand-orange:      #FF7A00;
+  --color-brand-yellow:      #FFC400;
+
+  /* Surface */
+  --color-surface:           #ffffff;
+  --color-surface-muted:     #f8fafc;
+  --color-surface-subtle:    #f1f5f9;
+  --color-surface-accent:    #e8f0fe;
+
+  /* Text */
+  --color-ink:               #0f172a;
+  --color-ink-secondary:     #475569;
+  --color-ink-muted:         #94a3b8;
+
+  /* Border */
+  --color-edge:              #e2e8f0;
+  --color-edge-strong:       #cbd5e1;
+
+  /* Font Family */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  /* Radius */
+  --radius-sm:    6px;
+  --radius-md:    10px;
+  --radius-lg:    16px;
+  --radius-xl:    24px;
+  --radius-2xl:   32px;
+  --radius-full:  9999px;
+
+  /* Shadow */
+  --shadow-card:  0 1px 3px rgba(0,0,0,.07), 0 1px 2px rgba(0,0,0,.05);
+  --shadow-lift:  0 10px 25px rgba(0,0,0,.08), 0 4px 10px rgba(0,0,0,.05);
+  --shadow-float: 0 20px 50px rgba(0,0,0,.1),  0 8px 20px rgba(0,0,0,.07);
+  --shadow-blue:  0 4px 18px rgba(30,107,214,.32);
+}
+
+/* ── Reset ─────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  scroll-behavior: smooth;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  font-family: var(--font-sans);
+  background-color: #ffffff;
+  color: var(--color-ink);
+  min-height: 100vh;
+  line-height: 1.6;
+}
+
+/* ── Selection ──────────────────────────────────── */
+::selection {
+  background: var(--color-surface-accent);
+  color: var(--color-brand-blue);
+}
+
+/* ── Scrollbar ──────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; }
+::-webkit-scrollbar-track { background: var(--color-surface-subtle); }
+::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 3px; }
+
+/* ── Focus ring ─────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--color-brand-blue);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* ── Utility: gradient text ─────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #1E6BD6 0%, #FF7A00 70%, #FFC400 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Utility: section tag ───────────────────────── */
+.section-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.375rem;
+  font-size: 0.75rem;
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--color-brand-blue);
+}
+
+/* ── Utility: card hover ───────────────────────── */
+.card-hover {
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
+}
+.card-hover:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-float);
+}
+
+/* ── Custom animations ─────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(28px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+@keyframes pulse-slow {
+  0%,100% { opacity: 1; }
+  50%      { opacity: 0.5; }
+}
+@keyframes spin-slow {
+  to { transform: rotate(360deg); }
+}
+@keyframes loader-fill {
+  from { width: 0%; }
+  to   { width: 100%; }
+}
+
+.animate-fade-up   { animation: fadeUp    0.6s ease both; }
+.animate-fade-in   { animation: fadeIn    0.5s ease both; }
+.animate-slide-down { animation: slideDown 0.35s ease both; }
+.loader-bar        { animation: loader-fill 3.2s cubic-bezier(.4,0,.2,1) forwards; }
+
+/* ── Layout Utilities ────────────────────────── */
+.section {
+  padding: 5rem 0;
+}
+.container {
+  width: 100%;
+  max-width: 1200px;
+  margin-left: auto;
+  margin-right: auto;
+  padding-left: 1.5rem;
+  padding-right: 1.5rem;
+}
+
+/* ── Typography Utilities ────────────────────── */
+.heading-xl {
+  font-size: clamp(2.25rem, 5vw, 3.75rem);
+  font-weight: 900;
+  line-height: 1.1;
+  letter-spacing: -0.02em;
+  color: var(--color-ink);
+}
+.heading-lg {
+  font-size: clamp(1.75rem, 4vw, 2.75rem);
+  font-weight: 800;
+  line-height: 1.2;
+  color: var(--color-ink);
+}
+
+/* ── Button base resets ────────────────────────── */
+button { cursor: pointer; font-family: inherit; }
+
+/* ── Input base ────────────────────────────────── */
+input, textarea, select {
+  font-family: inherit;
+}
