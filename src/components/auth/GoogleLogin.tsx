@@ -1,6 +1,5 @@
-'use client';
-
 import { createClient } from '@/utils/supabase/client';
+import { getURL } from '@/lib/url';
 import Button from '@/components/ui/Button';
 
 export function GoogleLogin() {
@@ -11,7 +10,7 @@ export function GoogleLogin() {
     const { error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${window.location.origin}/auth/callback`,
+        redirectTo: `${getURL()}/auth/callback`,
       },
     });
 
