@@ -2,6 +2,7 @@
 
 import { useState, FormEvent, ReactNode } from 'react';
 import Button from '@/components/ui/Button';
+import WhatsAppButton from '@/components/WhatsAppButton';
 import { logger } from '@/utils/logger';
 
 /**
@@ -9,22 +10,41 @@ import { logger } from '@/utils/logger';
  * Implements a simulated submission flow with structured logging and user feedback.
  */
 export default function ContactForm() {
-  const [form, setForm]     = useState({ name: '', email: '', subject: '', message: '' });
+  const [form, setForm]     = useState({ name: '', email: '', subject: '', message: '', bot: '' });
   const [status, setStatus] = useState<'idle' | 'sending' | 'success'>('idle');
 
   async function onSubmit(e: FormEvent) {
     e.preventDefault();
+    if (form.bot) return; // Silent reject for bots
+    
     logger.form('Contact', 'submit', form);
     
     setStatus('sending');
     try {
-      // Simulate network request
-      await new Promise(r => setTimeout(r, 1400));
+      const response = await fetch('/api/contact', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          name: form.name,
+          email: form.email,
+          subject: form.subject,
+          message: form.message,
+          bot: form.bot
+        }),
+      });
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send message');
+      }
+
       logger.form('Contact', 'success');
       setStatus('success');
-      setForm({ name: '', email: '', subject: '', message: '' });
-    } catch (err) {
+      setForm({ name: '', email: '', subject: '', message: '', bot: '' });
+    } catch (err: any) {
       logger.error('Failed to submit contact form', err);
+      alert(err.message || 'Something went wrong. Please try again.');
       setStatus('idle');
     }
   }
@@ -44,14 +64,23 @@ export default function ContactForm() {
         >
           <div className="text-5xl mb-4">✅</div>
           <h3 className="font-bold text-green-800 text-xl mb-2">Message Sent!</h3>
-          <p className="text-green-700 text-sm mb-5">Thanks — we'll be in touch shortly.</p>
-          <Button
+          <p className="text-green-700 text-sm mb-6">Thanks — we'll be in touch shortly. For immediate assistance, chat with us on WhatsApp:</p>
+          
+          <div className="mb-6">
+            <WhatsAppButton 
+              name={form.name} 
+              email={form.email} 
+              message={form.message} 
+              variant="inline" 
+            />
+          </div>
+
+          <button
             onClick={() => setStatus('idle')}
-            variant="secondary"
-            className="border-green-200 text-green-700 hover:bg-green-50"
+            className="text-xs font-bold uppercase tracking-widest text-green-600 hover:text-green-800 transition-colors"
           >
-            Send Another
-          </Button>
+            Send Another Message
+          </button>
         </div>
       ) : (
         <form onSubmit={onSubmit} className="space-y-5">
@@ -81,6 +110,16 @@ export default function ContactForm() {
               value={form.subject} onChange={e => setForm({ ...form, subject: e.target.value })}
             />
           </FormField>
+          <div className="hidden" aria-hidden="true">
+            <input 
+              type="text" 
+              name="bot_field" 
+              tabIndex={-1} 
+              autoComplete="off" 
+              value={form.bot} 
+              onChange={e => setForm({ ...form, bot: e.target.value })} 
+            />
+          </div>
           <FormField label="Message *">
             <textarea
               id="contact-message"

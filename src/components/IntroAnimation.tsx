@@ -14,9 +14,9 @@ export default function IntroAnimation({ onComplete }: Props) {
     logger.info('Animation started');
     
     const t1 = setTimeout(() => {
-      logger.info('Logo pieces assembled');
+      logger.info('Logo revealed');
       setAssembled(true);
-    }, 300);
+    }, 500);
     const t2 = setTimeout(() => {
       logger.info('Fade out started');
       setFading(true);
@@ -39,29 +39,15 @@ export default function IntroAnimation({ onComplete }: Props) {
       className={`fixed inset-0 z-[9999] flex flex-col items-center justify-center transition-opacity duration-700 ${fading ? 'opacity-0 pointer-events-none' : 'opacity-100'}`}
       style={{ background: '#0f172a' }}
     >
-      {/* Logo pieces */}
-      <div className="flex items-end gap-2 mb-8" style={{ perspective: 900 }}>
-        <Piece
-          color="#1E6BD6"
-          w={28} h={80}
-          initTransform="rotateY(-90deg) rotateX(30deg)"
-          assembled={assembled}
-          delay={0}
-        />
-        <Piece
-          color="#FF7A00"
-          w={28} h={104}
-          initTransform="rotateX(90deg) rotateY(-30deg)"
-          assembled={assembled}
-          delay={150}
-        />
-        <Piece
-          color="#FFC400"
-          w={28} h={60}
-          initTransform="rotateY(90deg) rotateX(-30deg)"
-          assembled={assembled}
-          delay={300}
-        />
+      {/* New Logo Image */}
+      <div 
+        className="mb-12 transition-all duration-1000 ease-out"
+        style={{ 
+          transform: assembled ? 'scale(1) translateY(0)' : 'scale(0.8) translateY(20px)',
+          opacity: assembled ? 1 : 0
+        }}
+      >
+        <img src="/logo.png" alt="Vanikara Logo" className="w-32 h-auto drop-shadow-[0_0_30px_rgba(30,107,214,0.3)]" />
       </div>
 
       {/* Brand name */}
@@ -72,7 +58,7 @@ export default function IntroAnimation({ onComplete }: Props) {
             fontSize: 'clamp(1.75rem,7vw,3rem)',
             transform: assembled ? 'translateY(0)' : 'translateY(64px)',
             opacity: assembled ? 1 : 0,
-            transitionDelay: assembled ? '0.5s' : '0s',
+            transitionDelay: '0.3s',
           }}
         >
           VANIKARA
@@ -83,7 +69,7 @@ export default function IntroAnimation({ onComplete }: Props) {
         className="mt-3 text-slate-400 text-sm tracking-[0.2em] uppercase transition-all duration-500"
         style={{
           opacity: assembled ? 0.75 : 0,
-          transitionDelay: assembled ? '0.9s' : '0s',
+          transitionDelay: '0.6s',
         }}
       >
         Innovative Technology Solutions
@@ -97,26 +83,5 @@ export default function IntroAnimation({ onComplete }: Props) {
         />
       </div>
     </div>
-  );
-}
-
-function Piece({ color, w, h, initTransform, assembled, delay }: {
-  color: string; w: number; h: number;
-  initTransform: string; assembled: boolean; delay: number;
-}) {
-  return (
-    <div
-      className="rounded-md transition-all"
-      style={{
-        width: w, height: h,
-        background: color,
-        opacity: assembled ? 1 : 0,
-        transform: assembled ? 'none' : initTransform,
-        transitionDuration: '700ms',
-        transitionTimingFunction: 'cubic-bezier(0.16,1,0.3,1)',
-        transitionDelay: `${delay}ms`,
-        boxShadow: assembled ? `0 8px 30px ${color}55` : 'none',
-      }}
-    />
   );
 }

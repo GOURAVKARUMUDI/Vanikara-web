@@ -2,10 +2,10 @@ import { FadeUp } from '@/components/Animate';
 import SectionHeader from '@/components/ui/SectionHeader';
 
 const TIMELINE = [
-  { year: '2019', event: 'Vanikara founded with a mission to democratize access to technology.' },
-  { year: '2020', event: 'Launched our first SaaS platform serving 500+ campus users.' },
-  { year: '2022', event: 'Expanded to enterprise clients across 3 industries.' },
-  { year: '2024', event: 'Grew to 12+ engineers; launched Student Marketplace Platform.' },
+  { year: '2026', event: 'March 2026 — VANIKARA founded' },
+  { year: '2026', event: 'Initial product ideas and validation phase' },
+  { year: '2026', event: 'Development started for Vanik marketplace' },
+  { year: '2026', event: 'Development started for FriskFree platform' },
 ];
 
 export default function TimelineSection() {
@@ -17,7 +17,7 @@ export default function TimelineSection() {
         </FadeUp>
         <div className="max-w-2xl mx-auto">
           {TIMELINE.map(({ year, event }, i) => (
-            <FadeUp key={year} delay={i * 0.1}>
+            <FadeUp key={`${year}-${i}`} delay={i * 0.1}>
               <div className="flex gap-5 mb-8">
                 <div className="flex flex-col items-center shrink-0">
                   <div className="w-10 h-10 rounded-full bg-blue-600 flex items-center justify-center text-white text-xs font-bold">

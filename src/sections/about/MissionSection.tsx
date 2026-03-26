@@ -3,9 +3,9 @@ import Card, { CardBody } from '@/components/ui/Card';
 import SectionHeader from '@/components/ui/SectionHeader';
 
 const PILLARS = [
-  { icon: '🎯', title: 'Our Mission', desc: 'To empower organizations with technology that is accessible, robust, and beautifully designed — so they can focus on what they do best.' },
-  { icon: '🔭', title: 'Our Vision',  desc: 'A world where every student, startup, and enterprise has access to world-class digital tools that level the playing field.' },
-  { icon: '💡', title: 'Our Values',  desc: 'Craftsmanship, transparency, and user-first thinking guide every decision — from first line of code to final delivery.' },
+  { icon: '🎯', title: 'Our Mission', desc: 'To build practical and accessible digital solutions that simplify everyday challenges for students.' },
+  { icon: '🔭', title: 'Our Vision',  desc: 'To grow into a trusted platform for student-focused innovation, connecting ideas, services, and communities.' },
+  { icon: '💡', title: 'Our Values',  desc: 'Execution, continuous learning, collaboration, and solving real problems with meaningful impact.' },
 ];
 
 export default function MissionSection() {

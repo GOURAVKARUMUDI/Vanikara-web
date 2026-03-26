@@ -3,10 +3,10 @@ import Card, { CardBody } from '@/components/ui/Card';
 import SectionHeader from '@/components/ui/SectionHeader';
 
 const TEAM = [
-  { name: 'Arun Kumar',   role: 'CEO & Co-Founder',  emoji: '👨‍💼' },
-  { name: 'Priya Nair',   role: 'CTO & Co-Founder',  emoji: '👩‍💻' },
-  { name: 'Rahul Sharma', role: 'Lead Engineer',      emoji: '👨‍💻' },
-  { name: 'Divya Reddy',  role: 'Head of Design',     emoji: '👩‍🎨' },
+  { name: 'Founding Team', role: 'Engineering & Product',  emoji: '🚀' },
+  { name: 'Founding Team', role: 'Design & Strategy',     emoji: '🎨' },
+  { name: 'Student Devs',  role: '6+ Builders',           emoji: '👨‍💻' },
+  { name: 'Community',     role: 'Student Relations',      emoji: '🌍' },
 ];
 
 export default function TeamSection() {
@@ -17,8 +17,8 @@ export default function TeamSection() {
           <SectionHeader tag="People" title="Meet the Team" />
         </FadeUp>
         <StaggerGrid className="grid grid-cols-2 lg:grid-cols-4 gap-5">
-          {TEAM.map(({ name, role, emoji }) => (
-            <StaggerItem key={name}>
+          {TEAM.map(({ name, role, emoji }, i) => (
+            <StaggerItem key={`${name}-${i}`}>
               <Card className="text-center">
                 <CardBody className="p-6">
                   <div

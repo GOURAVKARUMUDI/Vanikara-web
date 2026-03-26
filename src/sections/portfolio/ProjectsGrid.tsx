@@ -1,12 +1,8 @@
 import { StaggerGrid, StaggerItem } from '@/components/Animate';
 
 const PROJECTS = [
-  { tag: 'SaaS Platform', title: 'Campus Connect', desc: 'Social learning platform for universities with study groups, resource sharing, and peer tutoring.', stack: ['Next.js', 'PostgreSQL', 'AWS', 'Stripe'], color: '#1E6BD6', bg: '#e8f0fe', emoji: '🎓', metrics: [['8K+', 'Users'], ['99.9%', 'Uptime'], ['4.8★', 'Rating']] },
-  { tag: 'Dashboard',     title: 'FinFlow',        desc: 'Real-time financial analytics for SMEs with AI-powered insights and invoice management.', stack: ['React', 'Python', 'FastAPI', 'Chart.js'], color: '#7c3aed', bg: '#f3f0ff', emoji: '📊', metrics: [['500+', 'Businesses'], ['3.2B', 'Data Points'], ['40%', 'Time Saved']] },
-  { tag: 'Mobile App',    title: 'DeliveryZone',   desc: 'Cross-campus delivery app with real-time tracking, partner earnings, and automated dispatch.', stack: ['React Native', 'Node.js', 'WebSocket', 'MongoDB'], color: '#FF7A00', bg: '#fff7ed', emoji: '🛵', metrics: [['12K+', 'Deliveries'], ['<30min', 'Avg Time'], ['95%', 'On-time']] },
-  { tag: 'E-Commerce',    title: 'Student Marketplace', desc: 'Marketplace for buying/selling textbooks with escrow payments, chat, and smart pricing.', stack: ['Next.js', 'Supabase', 'Vercel', 'Razorpay'], color: '#059669', bg: '#ecfdf5', emoji: '📚', metrics: [['2.4K+', 'Listings'], ['₹12L+', 'Transacted'], ['98%', 'Satisfaction']] },
-  { tag: 'Automation',    title: 'PrintOps',        desc: 'Cloud printing management system with queue management and seamless payment flow.', stack: ['Node.js', 'React', 'AWS Lambda', 'PostgreSQL'], color: '#0891b2', bg: '#ecfeff', emoji: '🖨️', metrics: [['15K+', 'Jobs'], ['<5min', 'Queue'], ['99%', 'Success']] },
-  { tag: 'Analytics',     title: 'EventPulse',      desc: 'Event analytics and attendee management for campus orgs with QR check-in and live stats.', stack: ['Vue.js', 'Django', 'Redis', 'PostgreSQL'], color: '#db2777', bg: '#fdf2f8', emoji: '🎉', metrics: [['300+', 'Events'], ['50K+', 'Attendees'], ['4.9★', 'Rating']] },
+  { tag: 'Marketplace', title: 'Vanik', desc: 'Second-hand marketplace with integrated binding and printing services for students.', stack: ['Next.js', 'Supabase', 'Vercel', 'Razorpay'], color: '#1E6BD6', bg: '#e8f0fe', emoji: '🛍️', metrics: [['2026', 'Started'], ['Building', 'Status'], ['6+', 'Team']] },
+  { tag: 'Discovery',    title: 'FriskFree', desc: 'Platform to find PGs and hostels based on university and location.', stack: ['React Native', 'Node.js', 'PostgreSQL', 'Google Maps'], color: '#FF7A00', bg: '#fff7ed', emoji: '🏠', metrics: [['2026', 'Started'], ['Building', 'Status'], ['6+', 'Team']] },
 ];
 
 export default function ProjectsGrid() {
@@ -43,13 +39,20 @@ export default function ProjectsGrid() {
                       </div>
                     ))}
                   </div>
-                  <div className="flex flex-wrap gap-1.5">
+                  <div className="flex flex-wrap gap-1.5 mb-6">
                     {stack.map(s => (
                       <span
                         key={s}
                         className="text-[0.7rem] font-semibold px-2.5 py-1 rounded-full border border-slate-200 bg-slate-50 text-slate-600"
                       >{s}</span>
                     ))}
+                  </div>
+
+                  <div className="pt-5 border-t border-slate-50">
+                    <a href={`/contact?project=${encodeURIComponent(title)}`} 
+                       className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 group">
+                      Inquire About This <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+                    </a>
                   </div>
                 </div>
               </article>

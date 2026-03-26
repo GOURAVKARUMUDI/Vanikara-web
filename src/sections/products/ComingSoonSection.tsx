@@ -29,7 +29,13 @@ export default function ComingSoonSection() {
                 </span>
                 <div className="text-3xl mb-4">{icon}</div>
                 <h3 className="font-bold text-slate-900 mb-2">{title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
+                <p className="text-slate-500 text-sm leading-relaxed mb-6">{desc}</p>
+                <div className="pt-5 border-t border-slate-50">
+                  <a href={`/contact?product=${encodeURIComponent(title)}`} 
+                     className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 group">
+                    Express Interest <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+                  </a>
+                </div>
               </div>
             </StaggerItem>
           ))}

@@ -3,12 +3,10 @@ import Card, { CardBody } from '@/components/ui/Card';
 import SectionHeader from '@/components/ui/SectionHeader';
 
 const FEATURES = [
-  { icon: '⚡', title: 'Platform Engineering',  desc: 'Scalable cloud-native systems built for performance and reliability at any scale.' },
-  { icon: '📱', title: 'Mobile Apps',            desc: 'Cross-platform mobile experiences users love on iOS and Android.' },
-  { icon: '🌐', title: 'Web Applications',       desc: 'Fast, accessible, stunning web apps with cutting-edge tech.' },
-  { icon: '🛠️', title: 'Custom Software',        desc: 'Bespoke solutions tailored precisely to your business workflows.' },
-  { icon: '☁️', title: 'Cloud & DevOps',         desc: 'End-to-end cloud architecture, CI/CD pipelines, and automation.' },
-  { icon: '🎨', title: 'UI/UX Design',           desc: 'Intuitive interfaces crafted with research, design systems, and pixel-perfect detail.' },
+  { icon: '🌐', title: 'Web Development',       desc: 'High-performance, student-focused web experiences built for modern learning environments.' },
+  { icon: '🛍️', title: 'Marketplace Platforms',  desc: 'Scalable multi-vendor platforms tailored for campus commerce and resource sharing.' },
+  { icon: '🎨', title: 'UI/UX Design',           desc: 'Intuitive user interfaces crafted with a deep understanding of student behavior.' },
+  { icon: '📍', title: 'Local Discovery',        desc: 'Solutions that connect students with local hostels, services, and opportunities.' },
 ];
 
 export default function FeaturesSection() {

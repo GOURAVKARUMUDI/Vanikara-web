@@ -4,128 +4,108 @@ import { useState, useEffect } from 'react';
 import Link from 'next/link';
 import { usePathname } from 'next/navigation';
 import Button from '@/components/ui/Button';
-import { logger } from '@/utils/logger';
+import { createClient } from '@/utils/supabase/client';
+import { isAdmin } from '@/lib/isAdmin';
+import { useAuthRedirect } from '@/lib/authRedirect';
 
-interface NavLink {
-  href: string;
-  label: string;
-}
-
-const NAV_LINKS: NavLink[] = [
-  { href: '/',          label: 'Home'      },
-  { href: '/about',     label: 'About'     },
-  { href: '/services',  label: 'Services'  },
-  { href: '/products',  label: 'Products'  },
-  { href: '/portfolio', label: 'Portfolio' },
-  { href: '/contact',   label: 'Contact'   },
+const LNK = [
+  { h: '/',          l: 'Home'      },
+  { h: '/about',     l: 'About'     },
+  { h: '/services',  l: 'Services'  },
+  { h: '/products',  l: 'Products'  },
+  { h: '/portfolio', l: 'Portfolio' },
+  { h: '/ai',        l: 'AI Lab'    },
+  { h: '/contact',   l: 'Contact'   },
 ];
 
-/**
- * Navbar: Universal navigation header with scroll-aware styling and mobile responsiveness.
- */
 export default function Navbar() {
-  const [open, setOpen]       = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const pathname              = usePathname();
+  const [o, setO] = useState(false);
+  const [s, setS] = useState(false);
+  const [u, setU] = useState<any>(null);
+  const p = usePathname();
+  const sb = createClient();
+  
+  useAuthRedirect();
 
   useEffect(() => {
-    logger.lifecycle('Navbar', 'mount');
-    const onScroll = () => setScrolled(window.scrollY > 20);
-    window.addEventListener('scroll', onScroll, { passive: true });
+    if (!sb) return;
+    const fn = () => setS(window.scrollY > 20);
+    window.addEventListener('scroll', fn);
+    sb.auth.getUser().then(({ data: { user } }) => setU(user));
+    const { data: { subscription: sub } } = sb.auth.onAuthStateChange((_, ses) => setU(ses?.user || null));
     return () => {
-      logger.lifecycle('Navbar', 'unmount');
-      window.removeEventListener('scroll', onScroll);
+      window.removeEventListener('scroll', fn);
+      if (sub) sub.unsubscribe();
     };
-  }, []);
+  }, [sb]);
 
-  // Close menu on route change
-  useEffect(() => { 
-    logger.info(`Route changed to: ${pathname}`);
-    setOpen(false); 
-  }, [pathname]);
+  useEffect(() => { setO(false); }, [p]);
+
+  const out = async () => {
+    await sb.auth.signOut();
+    window.location.href = '/';
+  };
+
+  const getTitle = () => {
+    if (p === '/') return 'VANIKARA';
+    const segment = p.split('/').filter(Boolean).pop() || '';
+    return `VANIKARA - ${segment.toUpperCase()}`;
+  };
 
   return (
-    <header className={[
-      'sticky top-0 z-50 transition-all duration-300',
-      scrolled
-        ? 'bg-white/95 backdrop-blur-lg border-b border-slate-200 shadow-sm'
-        : 'bg-white/80 backdrop-blur-sm border-b border-transparent',
-    ].join(' ')}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="flex items-center justify-between h-16 lg:h-[68px]">
+    <header className={`sticky top-0 z-50 transition-all ${s ? 'bg-white/95 backdrop-blur shadow-sm' : 'bg-white/80'}`}>
+      <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+        <Link href="/" className="flex items-center gap-2">
+          <img src="/logo.png" alt="Vanikara Logo" className="w-10 h-auto" />
+          <span className="font-bold text-lg text-slate-900 tracking-tight">{getTitle()}</span>
+        </Link>
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center gap-2.5 shrink-0" onClick={() => setOpen(false)}>
-            <div className="w-9 h-9 rounded-[10px] flex items-center justify-center text-white font-extrabold text-lg"
-              style={{ background: 'linear-gradient(135deg,#1E6BD6,#FF7A00)' }}>
-              V
+        <nav className="hidden md:flex items-center gap-4">
+          {LNK.map(l => (
+            <Link key={l.h} href={l.h} className={`text-sm ${p === l.h ? 'text-blue-600' : 'text-slate-600'}`}>{l.l}</Link>
+          ))}
+          {u && (
+            <>
+              <Link href="/dashboard" className={`text-sm ${p === '/dashboard' ? 'text-blue-600' : 'text-slate-600'}`}>Dashboard</Link>
+              {isAdmin(u.email) && (
+                <Link href="/admin" className={`text-sm ${p === '/admin' ? 'text-blue-600' : 'text-slate-600'}`}>Admin</Link>
+              )}
+            </>
+          )}
+          {u ? (
+            <div className="flex items-center gap-3 ml-4">
+              <span className="text-xs text-slate-500">{u.email}</span>
+              <Button onClick={out} variant="secondary" size="sm">Logout</Button>
             </div>
-            <span className="font-extrabold text-xl text-slate-900 tracking-tight uppercase">VANIKARA</span>
-          </Link>
+          ) : (
+            <Button href="/login" variant="primary" size="sm" className="ml-4">Login</Button>
+          )}
+        </nav>
 
-          {/* Desktop Nav */}
-          <nav className="hidden md:flex items-center gap-1">
-            {NAV_LINKS.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className={[
-                  'px-3.5 py-2 rounded-full text-sm font-medium transition-colors duration-200',
-                  pathname === href
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-slate-600 hover:text-blue-600 hover:bg-blue-50',
-                ].join(' ')}
-              >
-                {label}
-              </Link>
-            ))}
-            <Button href="/login" variant="primary" size="sm" className="ml-2">
-              Login
-            </Button>
-          </nav>
-
-          {/* Hamburger */}
-          <button
-            className="md:hidden p-2 rounded-xl text-slate-700 hover:bg-slate-100 transition-colors"
-            onClick={() => setOpen(!open)}
-            aria-label="Toggle navigation"
-            aria-expanded={open}
-          >
-            <div className="w-5 flex flex-col gap-[5px]">
-              <span className={`block h-0.5 w-full bg-current rounded transition-all duration-300 ${open ? 'rotate-45 translate-y-[7px]' : ''}`} />
-              <span className={`block h-0.5 w-full bg-current rounded transition-all duration-300 ${open ? 'opacity-0 -translate-x-2' : ''}`} />
-              <span className={`block h-0.5 w-full bg-current rounded transition-all duration-300 ${open ? '-rotate-45 -translate-y-[7px]' : ''}`} />
-            </div>
-          </button>
-        </div>
+        <button className="md:hidden" onClick={() => setO(!o)}>Menu</button>
       </div>
-
-      {/* Mobile Drawer */}
-      <div className={`md:hidden overflow-hidden transition-all duration-300 ease-in-out ${open ? 'max-h-screen' : 'max-h-0'}`}>
-        <div className="bg-white border-t border-slate-100 px-4 pb-5 pt-2">
-          <nav className="flex flex-col gap-1">
-            {NAV_LINKS.map(({ href, label }) => (
-              <Link
-                key={href}
-                href={href}
-                className={[
-                  'px-4 py-3 rounded-xl text-base font-medium transition-colors',
-                  pathname === href
-                    ? 'text-blue-600 bg-blue-50'
-                    : 'text-slate-700 hover:text-blue-600 hover:bg-slate-50',
-                ].join(' ')}
-              >
-                {label}
-              </Link>
-            ))}
-            <div className="mt-2 px-4">
-              <Button href="/login" variant="primary" className="w-full">
-                Login
-              </Button>
-            </div>
-          </nav>
+      
+      {o && (
+        <div className="md:hidden bg-white border-t p-4 flex flex-col gap-2">
+          {LNK.map(l => <Link key={l.h} href={l.h} className="p-2 text-slate-600 hover:text-blue-600 transition-colors">{l.l}</Link>)}
+          {u && (
+            <>
+              <Link href="/dashboard" className="p-2 text-slate-600 hover:text-blue-600 transition-colors border-t border-slate-100">Dashboard</Link>
+              {isAdmin(u.email) && (
+                <Link href="/admin" className="p-2 text-slate-600 hover:text-blue-600 transition-colors">Admin</Link>
+              )}
+            </>
+          )}
+          <div className="pt-4 mt-2 border-t border-slate-100 flex flex-col gap-3">
+             {u && <span className="text-xs text-slate-400 px-2">{u.email}</span>}
+             {u ? (
+               <Button onClick={out} variant="secondary" size="sm" className="w-full">Logout</Button>
+             ) : (
+               <Button href="/login" variant="primary" size="sm" className="w-full">Login</Button>
+             )}
+          </div>
         </div>
-      </div>
+      )}
     </header>
   );
 }

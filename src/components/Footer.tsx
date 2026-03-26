@@ -18,22 +18,19 @@ export default function Footer() {
           {/* Brand */}
           <div className="col-span-2 sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-4 no-underline">
-              <div className="w-9 h-9 rounded-[10px] flex items-center justify-center text-white font-extrabold text-lg shrink-0"
-                style={{ background: 'linear-gradient(135deg,#1E6BD6,#FF7A00)' }}>V
-              </div>
+              <img src="/logo.png" alt="Vanikara Logo" className="w-10 h-auto" />
               <span className="font-extrabold text-[1.15rem] text-white tracking-tight">VANIKARA</span>
             </Link>
             <p className="text-sm leading-relaxed mb-5 max-w-[260px]">
-              Building innovative technology solutions that empower businesses and students.
+              Building innovative technology solutions that empower students and local communities.
             </p>
             <div className="flex gap-2">
               {[
-                { s: 'tw', h: 'https://twitter.com/vanikara' },
                 { s: 'li', h: 'https://linkedin.com/company/vanikara' },
                 { s: 'gh', h: 'https://github.com/vanikara' },
-                { s: 'in', h: 'https://instagram.com/vanikara' }
+                { s: 'mail', h: 'mailto:vanikara26@gmail.com' }
               ].map(({ s, h }) => (
-                <a key={s} href={h} target="_blank" rel="noopener noreferrer" 
+                <a key={s} href={h} target={h.startsWith('http') ? "_blank" : "_self"} rel="noopener noreferrer" 
                   className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold transition-all duration-200 hover:bg-blue-600 hover:text-white"
                   style={{ background: 'rgba(255,255,255,0.07)', color: '#94a3b8' }}>
                   {s.toUpperCase()}
@@ -43,37 +40,37 @@ export default function Footer() {
           </div>
 
           {/* Company */}
-          <div>
+          <div className="col-span-1">
             <h4 className="text-white font-semibold text-sm mb-4">Company</h4>
             <FooterLinks links={[
-              { href: '/about',     label: 'About'     },
-              { href: '/services',  label: 'Services'  },
-              { href: '/portfolio', label: 'Portfolio' },
-              { href: '/contact',   label: 'Contact'   },
+              { href: '/about',     label: 'About Us'   },
+              { href: '/services',  label: 'Services'   },
+              { href: '/portfolio', label: 'Portfolio'  },
+              { href: '/contact',   label: 'Contact'    },
             ]} />
           </div>
 
-          {/* Products */}
-          <div>
-            <h4 className="text-white font-semibold text-sm mb-4">Products</h4>
+          {/* Tools */}
+          <div className="col-span-1">
+            <h4 className="text-white font-semibold text-sm mb-4">Internal Tools</h4>
             <FooterLinks links={[
-              { href: '/products', label: 'Student Marketplace' },
-              { href: '/products', label: 'Campus Connect'      },
-              { href: '/products', label: 'Cloud Printing'      },
+              { href: '/ai',     label: 'AI Assistant' },
+              { href: '/upload', label: 'Secure Upload' },
+              { href: '/admin',  label: 'Admin Portal'  },
             ]} />
           </div>
 
           {/* Legal */}
-          <div>
+          <div className="col-span-2 sm:col-span-1">
             <h4 className="text-white font-semibold text-sm mb-4">Legal</h4>
             <FooterLinks links={[
               { href: '/privacy', label: 'Privacy Policy' },
               { href: '/terms',   label: 'Terms of Service' },
             ]} />
             <div className="mt-5">
-              <p className="text-xs mb-1 text-slate-500">Contact us</p>
+              <p className="text-xs mb-1 text-slate-500">Official Support</p>
               <a href="mailto:vanikara26@gmail.com"
-                className="text-sm font-medium text-orange-400 hover:text-orange-300 transition-colors no-underline">
+                className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors no-underline">
                 vanikara26@gmail.com
               </a>
             </div>

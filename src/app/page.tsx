@@ -14,11 +14,11 @@ export default function HomePage() {
       <FeaturesSection />
       <ProcessSection />
       <CTABanner
-        title="Ready to Build Something Amazing?"
-        subtitle="Let's turn your idea into a world-class digital product."
+        title="Be One of Our First Users"
+        subtitle="Join us early and be part of our journey"
         primaryLabel="Contact Us"
         primaryHref="/contact"
-        secondaryLabel="See Portfolio →"
+        secondaryLabel="Explore Our Work →"
         secondaryHref="/portfolio"
       />
     </>

@@ -23,13 +23,19 @@ export default function ServicesGrid() {
                     style={{ background: '#e8f0fe' }}>{icon}</div>
                   <h2 className="font-bold text-slate-900 text-lg mb-2.5">{title}</h2>
                   <p className="text-slate-500 text-sm leading-relaxed mb-5">{desc}</p>
-                  <ul className="space-y-1.5 list-none p-0">
+                  <ul className="space-y-1.5 list-none p-0 flex-1">
                     {features.map(f => (
                       <li key={f} className="flex items-center gap-2 text-sm text-slate-500">
                         <span className="text-blue-500 font-bold shrink-0">✓</span> {f}
                       </li>
                     ))}
                   </ul>
+                  <div className="mt-6 pt-5 border-t border-slate-50">
+                    <a href={`/contact?service=${encodeURIComponent(title)}`} 
+                       className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 group">
+                      Get a Quote <span className="group-hover:translate-x-0.5 transition-transform">→</span>
+                    </a>
+                  </div>
                 </CardBody>
               </Card>
             </StaggerItem>

@@ -7,10 +7,10 @@ import Badge from '@/components/ui/Badge';
 import IntroAnimation from '@/components/IntroAnimation';
 
 const STATS = [
-  { value: '50+',  label: 'Projects Delivered' },
-  { value: '98%',  label: 'Client Satisfaction' },
-  { value: '5+',   label: 'Years Experience'    },
-  { value: '12+',  label: 'Team Members'        },
+  { value: '2',    label: 'Products Building' },
+  { value: '0',    label: 'Happy Clients'      },
+  { value: '2026', label: 'Founded Year'       },
+  { value: '6+',   label: 'Team Members'        },
 ];
 
 export default function HeroSection() {
@@ -38,7 +38,6 @@ export default function HeroSection() {
         className="relative min-h-[90vh] flex items-center overflow-hidden"
         style={{ background: 'linear-gradient(160deg,#f8fafc 0%,#e8f0fe 55%,#fff7ed 100%)' }}
       >
-        {/* Decorative orbs */}
         <div className="absolute top-[-80px] right-[-80px] w-[500px] h-[500px] rounded-full pointer-events-none"
           style={{ background: 'radial-gradient(circle,rgba(30,107,214,.09),transparent 70%)' }} />
         <div className="absolute bottom-[-100px] left-[-80px] w-[400px] h-[400px] rounded-full pointer-events-none"
@@ -53,7 +52,7 @@ export default function HeroSection() {
               transition={{ duration: 0.5 }}
               className="mb-6"
             >
-              <Badge>🚀 Innovative Technology Solutions</Badge>
+              <Badge>Building real-world solutions for students and local communities</Badge>
             </motion.div>
 
             <motion.h1
@@ -63,8 +62,8 @@ export default function HeroSection() {
               className="font-extrabold leading-[1.07] tracking-tight mb-6 text-slate-900"
               style={{ fontSize: 'clamp(2.5rem,6vw,4.25rem)' }}
             >
-              We Build Technology{' '}
-              <span className="gradient-text">That Matters</span>
+              Building Real Solutions{' '}
+              <span className="gradient-text">for Students</span>
             </motion.h1>
 
             <motion.p
@@ -73,8 +72,7 @@ export default function HeroSection() {
               transition={{ duration: 0.6, delay: 0.25 }}
               className="text-lg sm:text-xl text-slate-500 max-w-2xl mx-auto mb-10 leading-relaxed"
             >
-              Vanikara crafts premium digital platforms — from student marketplaces to enterprise
-              systems — delivering solutions that drive real-world impact.
+              A team of 6+ building platforms to simplify student life.
             </motion.p>
 
             <motion.div
@@ -83,15 +81,14 @@ export default function HeroSection() {
               transition={{ duration: 0.5, delay: 0.4 }}
               className="flex flex-col sm:flex-row gap-3 justify-center"
             >
-              <Button href="/contact" variant="primary" size="lg" id="hero-cta-contact">
-                Start a Project
+              <Button href="/portfolio" variant="primary" size="lg" id="hero-cta-contact">
+                Explore Our Work
               </Button>
-              <Button href="/products" variant="secondary" size="lg" id="hero-cta-work">
-                View Our Work →
+              <Button href="/contact" variant="secondary" size="lg" id="hero-cta-work">
+                Get in Touch
               </Button>
             </motion.div>
 
-            {/* Stats */}
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
