@@ -90,7 +90,7 @@ export default function AboutPage() {
               <Card className="h-full border-t-4 border-t-blue-600">
                 <CardBody className="p-8">
                   <div className="w-12 h-12 rounded-2xl bg-blue-50 flex items-center justify-center text-blue-600 text-xl mb-6 font-bold">MGC</div>
-                  <h3 className="text-xl font-bold text-slate-900 mb-2">Giri Charan Mirayla </h3>
+                  <h3 className="text-xl font-bold text-slate-900 mb-2">Giri Charan Miriyala </h3>
                   <p className="text-slate-500 text-sm leading-relaxed">"Leads vision, ideation, and product direction"</p>
                 </CardBody>
               </Card>
