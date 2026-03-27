@@ -3,7 +3,7 @@ import Button from '@/components/ui/Button';
 
 export const metadata: Metadata = { 
   title: 'Terms of Service',
-  description: 'The legal agreement governing your use of Vanikara products and services.'
+  description: 'The legal agreement governing your use of VANIKARA INTELLIGENCE PRIVATE LIMITED products and services.'
 };
 
 /**
@@ -13,7 +13,7 @@ export default function TermsPage() {
   const sections = [
     {
       title: '1. Acceptance of Terms',
-      content: `By accessing and using Vanikara's services, website, or products, you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
+      content: `By accessing and using VANIKARA INTELLIGENCE PRIVATE LIMITED's services, website, or products, you accept and agree to be bound by these Terms of Service. If you do not agree to these terms, please do not use our services.
 
 These terms apply to all users of our services, including without limitation users who are browsers, vendors, customers, merchants, and contributors of content.`,
     },
@@ -23,7 +23,7 @@ These terms apply to all users of our services, including without limitation use
     },
     {
       title: '3. Intellectual Property',
-      content: `All content, features, and functionality of Vanikara's services — including but not limited to text, graphics, logos, icons, images, audio clips, and software — are the exclusive property of Vanikara and are protected by copyright, trademark, and other intellectual property laws.
+      content: `All content, features, and functionality of VANIKARA INTELLIGENCE PRIVATE LIMITED's services — including but not limited to text, graphics, logos, icons, images, audio clips, and software — are the exclusive property of VANIKARA INTELLIGENCE PRIVATE LIMITED and are protected by copyright, trademark, and other intellectual property laws.
 
 You may not reproduce, modify, distribute, or create derivative works without our express written consent.`,
     },
@@ -37,7 +37,7 @@ You may not reproduce, modify, distribute, or create derivative works without ou
     },
     {
       title: '6. Limitation of Liability',
-      content: `To the maximum extent permitted by law, Vanikara shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses resulting from your use of our services.`,
+      content: `To the maximum extent permitted by law, VANIKARA INTELLIGENCE PRIVATE LIMITED shall not be liable for any indirect, incidental, special, consequential, or punitive damages, or any loss of profits or revenues, whether incurred directly or indirectly, or any loss of data, use, goodwill, or other intangible losses resulting from your use of our services.`,
     },
     {
       title: '7. Disclaimer of Warranties',
@@ -70,7 +70,7 @@ You may not reproduce, modify, distribute, or create derivative works without ou
       <section className="section">
         <div className="container" style={{ maxWidth: 800 }}>
           <div className="p-6 rounded-2xl mb-12 text-sm" style={{ background: '#fff7ed', border: '1px solid rgba(255,122,0,0.15)', color: '#FF7A00' }}>
-            ⚠️ Please read these Terms of Service carefully before using Vanikara's products or services.
+            ⚠️ Please read these Terms of Service carefully before using VANIKARA INTELLIGENCE PRIVATE LIMITED's products or services.
           </div>
 
           <div className="space-y-12">

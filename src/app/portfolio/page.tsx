@@ -5,7 +5,7 @@ import CTABanner from '@/sections/home/CTABanner';
 
 export const metadata: Metadata = { 
   title: 'Portfolio',
-  description: 'Browse the portfolio of digital products and engineering projects delivered by the Vanikara team.'
+  description: 'Browse the portfolio of digital products and engineering projects delivered by the VANIKARA INTELLIGENCE PRIVATE LIMITED team.'
 };
 
 /**

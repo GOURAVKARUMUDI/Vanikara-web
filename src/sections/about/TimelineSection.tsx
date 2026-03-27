@@ -2,7 +2,7 @@ import { FadeUp } from '@/components/Animate';
 import SectionHeader from '@/components/ui/SectionHeader';
 
 const TIMELINE = [
-  { year: '2026', event: 'March 2026 — VANIKARA founded' },
+  { year: '2026', event: 'March 2026 — VANIKARA INTELLIGENCE PRIVATE LIMITED founded' },
   { year: '2026', event: 'Initial product ideas and validation phase' },
   { year: '2026', event: 'Development started for Vanik marketplace' },
   { year: '2026', event: 'Development started for FriskFree platform' },

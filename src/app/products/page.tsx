@@ -7,7 +7,7 @@ import CTABanner from '@/sections/home/CTABanner';
 
 export const metadata: Metadata = { 
   title: 'Products',
-  description: 'Explore the digital platforms engineered by Vanikara, including our flagship Student Marketplace.'
+  description: 'Explore the digital platforms engineered by VANIKARA INTELLIGENCE PRIVATE LIMITED, including our flagship Student Marketplace.'
 };
 
 /**

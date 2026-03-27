@@ -6,7 +6,7 @@ import CTABanner from '@/sections/home/CTABanner';
 
 export const metadata: Metadata = { 
   title: 'Services',
-  description: 'From software engineering to mobile app development, Vanikara offers full-cycle technology solutions.'
+  description: 'From software engineering to mobile app development, VANIKARA INTELLIGENCE PRIVATE LIMITED offers full-cycle technology solutions.'
 };
 
 /**

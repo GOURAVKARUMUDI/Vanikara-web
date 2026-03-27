@@ -6,17 +6,17 @@ import WhatsAppButton from '@/components/WhatsAppButton';
 
 export const metadata: Metadata = {
   title: {
-    default: 'Vanikara — Innovative Technology Solutions',
-    template: '%s | Vanikara',
+    default: 'VANIKARA INTELLIGENCE — Innovative Technology Solutions',
+    template: '%s | VANIKARA INTELLIGENCE',
   },
   description:
-    'Vanikara builds premium digital platforms — from student marketplaces to enterprise software. We craft technology that matters.',
-  keywords: ['Vanikara', 'technology', 'software development', 'platform engineering', 'web apps'],
+    'VANIKARA INTELLIGENCE PRIVATE LIMITED builds premium digital platforms — from student marketplaces to enterprise software. We craft technology that matters.',
+  keywords: ['VANIKARA INTELLIGENCE', 'VANIKARA INTELLIGENCE PRIVATE LIMITED', 'technology', 'software development', 'platform engineering', 'web apps'],
   openGraph: {
-    title: 'Vanikara — Innovative Technology Solutions',
+    title: 'VANIKARA INTELLIGENCE — Innovative Technology Solutions',
     description: 'We build technology that matters.',
     url: 'https://vanikara.com',
-    siteName: 'Vanikara',
+    siteName: 'VANIKARA INTELLIGENCE',
     type: 'website',
   },
 };

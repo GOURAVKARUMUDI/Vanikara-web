@@ -20,8 +20,8 @@ export default function AboutPage() {
     <div className="min-h-screen">
       <PageHero
         tag="Our Story"
-        title={<>About <span className="gradient-text">Vanikara</span></>}
-        subtitle="VANIKARA is an early-stage startup building practical digital solutions for students. What began as a shared vision between three friends is now growing into a focused effort to solve real-world problems through technology."
+        title={<>About <span className="gradient-text">VANIKARA INTELLIGENCE</span></>}
+        subtitle="VANIKARA INTELLIGENCE PRIVATE LIMITED is an early-stage startup building practical digital solutions for students. What began as a shared vision between three friends is now growing into a focused effort to solve real-world problems through technology."
       />
 
       {/* Our Mission Statement */}
@@ -39,13 +39,13 @@ export default function AboutPage() {
       <section id="story" className="py-24" style={{ background: '#f8fafc' }}>
         <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
           <FadeUp>
-            <SectionHeader tag="Our Journey" title="The Story of Vanikara" />
+            <SectionHeader tag="Our Journey" title="The Story of VANIKARA INTELLIGENCE" />
           </FadeUp>
           <div className="max-w-3xl mx-auto">
             <FadeUp delay={0.1}>
               <div className="prose prose-slate max-w-none">
                 <p className="text-lg text-slate-600 leading-relaxed mb-6">
-                  VANIKARA was founded on a shared vision between three friends who set out to build something meaningful of their own.
+                  VANIKARA INTELLIGENCE PRIVATE LIMITED was founded on a shared vision between three friends who set out to build something meaningful of their own.
                 </p>
                 <p className="text-lg text-slate-600 leading-relaxed mb-8">
                   What began as a simple idea evolved into a journey shaped by challenges, continuous learning, and persistence. Today, a growing team of 6+ members is working together to build practical digital solutions for students, particularly in marketplaces and discovery platforms.
@@ -69,7 +69,7 @@ export default function AboutPage() {
                 </div>
 
                 <p className="text-lg text-slate-600 leading-relaxed mt-12 pt-10 border-t border-slate-200">
-                  Together, they established VANIKARA with a clear mission to build practical, scalable solutions that address real-world challenges faced by students and local communities.
+                  Together, they established VANIKARA INTELLIGENCE PRIVATE LIMITED with a clear mission to build practical, scalable solutions that address real-world challenges faced by students and local communities.
                 </p>
               </div>
             </FadeUp>
@@ -128,7 +128,7 @@ export default function AboutPage() {
           <div className="max-w-3xl mx-auto text-center">
             <FadeUp delay={0.1}>
               <p className="text-lg text-slate-600 leading-relaxed mb-10">
-                VANIKARA is collaborating with <strong>Barg Technologies</strong> to support upcoming projects and expand technical and operational capabilities.
+                VANIKARA INTELLIGENCE PRIVATE LIMITED is collaborating with <strong>Barg Technologies</strong> to support upcoming projects and expand technical and operational capabilities.
               </p>
               <a
                 href="https://bargtechnologies.in/"

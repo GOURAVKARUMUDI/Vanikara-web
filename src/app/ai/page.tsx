@@ -35,7 +35,7 @@ export default function AIPage() {
     <>
       <PageHero
         tag="AI Assistant"
-        title={<>Explore the <span className="gradient-text">Vanikara AI Lab</span></>}
+        title={<>Explore the <span className="gradient-text">VANIKARA INTELLIGENCE AI Lab</span></>}
         subtitle="Interact with our custom-trained models to solve problems or generate insights."
       />
 
@@ -48,7 +48,7 @@ export default function AIPage() {
                 <textarea
                   value={p}
                   onChange={(e) => setP(e.target.value)}
-                  placeholder="Ask me anything about technology, students, or Vanikara..."
+                  placeholder="Ask me anything about technology, students, or VANIKARA INTELLIGENCE..."
                   className="w-full h-40 p-5 bg-white border border-slate-200 rounded-2xl text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
                 />
               </div>

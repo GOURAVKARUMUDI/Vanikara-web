@@ -47,9 +47,9 @@ export default function Navbar() {
   };
 
   const getTitle = () => {
-    if (p === '/') return 'VANIKARA';
+    if (p === '/') return 'VANIKARA INTELLIGENCE';
     const segment = p.split('/').filter(Boolean).pop() || '';
-    return `VANIKARA - ${segment.toUpperCase()}`;
+    return `VANIKARA INTELLIGENCE - ${segment.toUpperCase()}`;
   };
 
   return (

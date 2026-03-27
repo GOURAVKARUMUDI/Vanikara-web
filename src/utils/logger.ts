@@ -11,7 +11,7 @@ type LogLevel = 'INFO' | 'WARN' | 'ERROR';
 /**
  * Generates the standardized brand prefix for console logs.
  */
-const getPrefix = (level: LogLevel): string => `[VANIKARA-${level}]`;
+const getPrefix = (level: LogLevel): string => `[VANIKARA_INTELLIGENCE-${level}]`;
 
 export const logger = {
   /**

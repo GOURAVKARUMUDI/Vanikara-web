@@ -27,7 +27,7 @@ export async function POST() {
           price_data: {
             currency: "inr",
             product_data: {
-              name: "Vanikara Growth Plan"
+              name: "VANIKARA INTELLIGENCE Growth Plan"
             },
             unit_amount: 99900,
             recurring: {

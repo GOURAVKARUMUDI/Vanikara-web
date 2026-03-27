@@ -6,7 +6,7 @@ import ContactInfo from '@/sections/contact/ContactInfo';
 
 export const metadata: Metadata = { 
   title: 'Contact',
-  description: 'Connect with Vanikara for project inquiries, partnership opportunities, or product demos.'
+  description: 'Reach out to VANIKARA INTELLIGENCE PRIVATE LIMITED for inquiries, support, or partnership opportunities.'
 };
 
 /**

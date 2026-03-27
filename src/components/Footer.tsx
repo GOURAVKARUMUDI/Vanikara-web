@@ -19,7 +19,7 @@ export default function Footer() {
           <div className="col-span-2 sm:col-span-2 lg:col-span-1">
             <Link href="/" className="flex items-center gap-2.5 mb-4 no-underline">
               <img src="/logo.png" alt="Vanikara Logo" className="w-10 h-auto" />
-              <span className="font-extrabold text-[1.15rem] text-white tracking-tight">VANIKARA</span>
+              <span className="font-extrabold text-[1.15rem] text-white tracking-tight">VANIKARA INTELLIGENCE</span>
             </Link>
             <p className="text-sm leading-relaxed mb-5 max-w-[260px]">
               Building innovative technology solutions that empower students and local communities.
@@ -79,7 +79,7 @@ export default function Footer() {
 
         {/* Bottom */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-8 text-xs text-slate-500">
-          <p>© {year} Vanikara Technologies. All rights reserved.</p>
+          <p>© {year} VANIKARA INTELLIGENCE PRIVATE LIMITED. All rights reserved.</p>
           <p>Crafted with <span className="text-orange-400">♥</span> for innovation</p>
         </div>
 

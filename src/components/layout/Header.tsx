@@ -19,7 +19,7 @@ export function Header() {
 
   return (
     <nav className="flex items-center justify-between px-8 py-4 bg-transparent border-b border-white/10">
-      <Link href="/" className="text-2xl font-bold text-white">Vanikara</Link>
+      <Link href="/" className="text-2xl font-bold text-white">VANIKARA INTELLIGENCE</Link>
       <div className="flex items-center gap-4">
         {u ? (
           <>

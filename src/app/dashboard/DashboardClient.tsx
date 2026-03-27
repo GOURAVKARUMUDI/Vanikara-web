@@ -76,7 +76,7 @@ export default function DashboardClient({ initialUser, initialProfile, initialSu
               <h1 className="text-4xl md:text-5xl font-black tracking-tight mb-2 text-slate-900">
                 Welcome back, <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 via-indigo-600 to-blue-700">{user.email?.split('@')[0]}</span>
               </h1>
-              <p className="text-slate-500 font-medium tracking-tight">Access your premium Vanikara tools and insights.</p>
+              <p className="text-slate-500 font-medium tracking-tight">Access your premium VANIKARA INTELLIGENCE tools and insights.</p>
             </div>
           </div>
         </div>

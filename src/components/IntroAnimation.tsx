@@ -61,7 +61,7 @@ export default function IntroAnimation({ onComplete }: Props) {
             transitionDelay: '0.3s',
           }}
         >
-          VANIKARA
+          VANIKARA INTELLIGENCE
         </h1>
       </div>
 

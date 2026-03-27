@@ -3,7 +3,7 @@ import Button from '@/components/ui/Button';
 
 export const metadata: Metadata = { 
   title: 'Privacy Policy',
-  description: 'Learn how Vanikara protects and manages your personal data and privacy.'
+  description: 'Learn how VANIKARA INTELLIGENCE PRIVATE LIMITED protects and manages your personal data and privacy.'
 };
 
 /**
@@ -66,7 +66,7 @@ To exercise these rights, please contact us at vanikara26@gmail.com.`,
       <section className="section">
         <div className="container" style={{ maxWidth: 800 }}>
           <div className="p-6 rounded-2xl mb-12 text-sm" style={{ background: '#e8f0fe', border: '1px solid rgba(30,107,214,0.15)', color: '#1E6BD6' }}>
-            ℹ️ This policy explains how Vanikara collects, uses, and protects your personal information. By using our services, you agree to this policy.
+            ℹ️ This policy explains how VANIKARA INTELLIGENCE PRIVATE LIMITED collects, uses, and protects your personal information. By using our services, you agree to this policy.
           </div>
 
           <div className="space-y-12">
