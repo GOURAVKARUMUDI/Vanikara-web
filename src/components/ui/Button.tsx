@@ -1,59 +1,118 @@
-import Link from 'next/link';
-import { ReactNode, ComponentPropsWithoutRef } from 'react';
+"use client";
 
-interface ButtonProps extends ComponentPropsWithoutRef<'button'> {
-  /** Target URL. If provided, renders as an anchor/Link. */
+import Link from "next/link";
+import React, { useState, MouseEvent } from "react";
+import Magnetic from "./Magnetic";
+import { audioManager } from "@/lib/audio";
+
+interface ButtonProps extends React.ComponentPropsWithoutRef<"button"> {
   href?: string;
-  /** Primary, secondary, ghost, or white style variant. */
-  variant?: 'primary' | 'secondary' | 'ghost' | 'white';
-  /** Button sizing. */
-  size?: 'sm' | 'md' | 'lg';
-  /** Accessible label for screen readers. */
-  'aria-label'?: string;
+  variant?: "primary" | "secondary" | "ghost" | "white";
+  size?: "sm" | "md" | "lg";
+  magnetic?: boolean;
 }
 
-const BASE = 'inline-flex items-center justify-center rounded-full font-semibold transition-all duration-200 hover:-translate-y-0.5 focus:outline-none focus-visible:ring-2 focus-visible:ring-blue-500 disabled:opacity-60 disabled:pointer-events-none active:scale-95';
+interface Ripple {
+  x: number;
+  y: number;
+  id: number;
+}
 
-const VARIANTS = {
-  primary:   'text-white',
-  secondary: 'bg-white text-blue-600 border border-slate-200 hover:border-blue-400 hover:shadow-md',
-  ghost:     'text-white border border-white/30 hover:bg-white/10',
-  white:     'bg-white text-blue-600 hover:shadow-md',
-};
-
-const SIZES = {
-  sm: 'px-5 py-2 text-sm',
-  md: 'px-7 py-3 text-sm',
-  lg: 'px-8 py-3.5 text-base',
-};
-
-const primaryStyle = {
-  background: 'linear-gradient(135deg,#1E6BD6,#1557c0)',
-  boxShadow:  '0 4px 14px rgba(30,107,214,.35)',
-};
-
-/**
- * Button component: Versatile interactive element supporting both button and link behaviors.
- */
 export default function Button({
-  href, variant = 'primary', size = 'md', className = '', children, ...props
+  href,
+  variant = "primary",
+  size = "md",
+  magnetic = false,
+  className = "",
+  children,
+  onClick,
+  ...props
 }: ButtonProps) {
-  const cls = `${BASE} ${VARIANTS[variant]} ${SIZES[size]} ${className}`;
-  const style = variant === 'primary' ? primaryStyle : undefined;
+  const [ripples, setRipples] = useState<Ripple[]>([]);
 
-  if (href) {
-    // We separate button-only props if necessary, but for a standard Link
-    // most common standard props like 'id', 'className', 'style' are valid.
-    return (
-      <Link href={href} className={cls} style={style}>
+  const handleRipple = (e: MouseEvent<HTMLButtonElement | HTMLAnchorElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+    const newRipple = { x, y, id: Date.now() };
+    
+    setRipples((prev) => [...prev, newRipple]);
+    
+    // Clear ripple after animation
+    setTimeout(() => {
+      setRipples((prev) => prev.filter((r) => r.id !== newRipple.id));
+    }, 600);
+  };
+
+  const handleMouseEnter = () => {
+    audioManager.playHover();
+  };
+
+  const handleClick = (e: MouseEvent<HTMLButtonElement & HTMLAnchorElement>) => {
+    audioManager.playClick();
+    handleRipple(e);
+    if (onClick) {
+      onClick(e as any);
+    }
+  };
+
+  const baseClasses =
+    "relative inline-flex items-center justify-center rounded-full font-semibold overflow-hidden transition-all duration-300 active:scale-95 focus:outline-none disabled:opacity-60 disabled:pointer-events-none select-none";
+
+  const sizeClasses = {
+    sm: "px-5 py-2 text-xs tracking-wider",
+    md: "px-7 py-3 text-sm tracking-wide",
+    lg: "px-9 py-4 text-base tracking-wide",
+  }[size];
+
+  const variantClasses = {
+    primary:
+      "text-white bg-blue-600/80 hover:bg-blue-600 border border-blue-400/30 backdrop-blur-md shadow-[0_4px_20px_rgba(30,107,214,0.15)] hover:shadow-[0_8px_32px_rgba(30,107,214,0.3)] hover:scale-105 transition-all",
+    secondary:
+      "bg-white/5 dark:bg-white/5 border border-white/20 dark:border-white/10 text-[var(--text-primary)] hover:bg-white/15 dark:hover:bg-white/10 backdrop-blur-md shadow-[0_4px_12px_rgba(255,255,255,0.02)] hover:shadow-[0_8px_24px_rgba(255,255,255,0.05)] hover:scale-105 transition-all",
+    ghost:
+      "bg-transparent border border-[var(--glass-border)] text-[var(--text-primary)] hover:bg-[var(--glass-bg)] backdrop-blur-sm",
+    white:
+      "bg-white border border-slate-200 text-slate-900 hover:shadow-md hover:bg-slate-50",
+  }[variant];
+
+  const buttonContent = (
+    <>
+      <span className="relative z-10 flex items-center justify-center gap-2">
         {children}
-      </Link>
-    );
-  }
+      </span>
+      {/* Click ripple animations */}
+      {ripples.map((r) => (
+        <span
+          key={r.id}
+          className="absolute rounded-full pointer-events-none bg-white/20 animate-ping"
+          style={{
+            left: r.x - 30,
+            top: r.y - 30,
+            width: 60,
+            height: 60,
+            animationDuration: "0.6s",
+          }}
+        />
+      ))}
+    </>
+  );
 
-  return (
-    <button className={cls} style={style} {...props}>
-      {children}
+  const mergedClasses = `${baseClasses} ${sizeClasses} ${variantClasses} ${className}`;
+
+  const buttonElement = href ? (
+    <Link href={href} className={mergedClasses} onClick={handleClick as any} onMouseEnter={handleMouseEnter}>
+      {buttonContent}
+    </Link>
+  ) : (
+    <button className={mergedClasses} onClick={handleClick as any} onMouseEnter={handleMouseEnter} {...props}>
+      {buttonContent}
     </button>
   );
+
+  if (magnetic) {
+    return <Magnetic>{buttonElement}</Magnetic>;
+  }
+
+  return buttonElement;
 }

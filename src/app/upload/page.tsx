@@ -56,14 +56,14 @@ export default function UploadPage() {
         subtitle="Securely share documents, assets, or project requirements with our engineering team."
       />
 
-      <section className="py-20 bg-white">
+      <section className="py-20 bg-transparent">
         <div className="max-w-2xl mx-auto px-6">
-          <div className="p-10 bg-slate-50 border border-slate-200 rounded-[40px] text-center shadow-sm relative overflow-hidden group">
-            <div className="absolute top-0 left-0 w-32 h-32 bg-blue-600/5 blur-3xl -ml-16 -mt-16"></div>
+          <div className="p-10 bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-md rounded-[40px] text-center shadow-sm relative overflow-hidden group">
+            <div className="absolute top-0 left-0 w-32 h-32 bg-[var(--accent-color)]/5 blur-3xl -ml-16 -mt-16"></div>
             
             <div className="relative z-10">
-              <div className="w-20 h-20 bg-blue-600/10 rounded-3xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform duration-500">
-                <Upload className="w-8 h-8 text-blue-600" />
+              <div className="w-20 h-20 bg-[var(--accent-color)]/10 rounded-3xl flex items-center justify-center mx-auto mb-8 group-hover:scale-110 transition-transform duration-500">
+                <Upload className="w-8 h-8 text-[var(--accent-color)]" />
               </div>
 
               <div className="mb-8">
@@ -75,7 +75,7 @@ export default function UploadPage() {
                 />
                 <label 
                   htmlFor="file-upload"
-                  className="inline-flex items-center gap-3 px-8 py-4 bg-white border-2 border-dashed border-slate-200 rounded-2xl cursor-pointer hover:border-blue-400 hover:bg-blue-50/50 transition-all text-slate-600 font-bold text-sm"
+                  className="inline-flex items-center gap-3 px-8 py-4 bg-[var(--glass-bg)] border-2 border-dashed border-[var(--glass-border)] rounded-2xl cursor-pointer hover:border-[var(--accent-color)] hover:bg-slate-500/5 transition-all text-[var(--text-secondary)] font-bold text-sm"
                 >
                   {f ? (
                     <>
@@ -89,7 +89,7 @@ export default function UploadPage() {
                     </>
                   )}
                 </label>
-                <p className="mt-4 text-[11px] font-bold text-slate-400 uppercase tracking-widest">
+                <p className="mt-4 text-[11px] font-bold text-[var(--text-secondary)]/60 uppercase tracking-widest">
                   Maximum file size: 50MB (PDF, PNG, JPG, ZIP)
                 </p>
               </div>
@@ -103,7 +103,7 @@ export default function UploadPage() {
               </Button>
 
               {s && (
-                <div className={`mt-8 p-4 rounded-2xl flex items-center justify-center gap-3 animate-in fade-in zoom-in-95 duration-300 ${isError ? 'bg-red-50 text-red-600 border border-red-100' : 'bg-green-50 text-green-600 border border-green-100'}`}>
+                <div className={`mt-8 p-4 rounded-2xl flex items-center justify-center gap-3 animate-in fade-in zoom-in-95 duration-300 ${isError ? 'bg-red-500/10 text-red-500 border border-red-500/20' : 'bg-green-500/10 text-green-500 border border-green-500/20'}`}>
                   {isError ? <AlertCircle className="w-5 h-5" /> : <FileCheck className="w-5 h-5" />}
                   <span className="text-sm font-bold">{s}</span>
                 </div>
@@ -112,7 +112,7 @@ export default function UploadPage() {
           </div>
 
           <div className="mt-12 text-center">
-             <p className="text-slate-400 text-xs font-medium max-w-sm mx-auto">
+             <p className="text-[var(--text-secondary)] text-xs font-medium max-w-sm mx-auto">
                By uploading files, you agree to our terms. Everything shared via this portal is encrypted and stored in secure private buckets.
              </p>
           </div>

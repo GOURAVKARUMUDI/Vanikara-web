@@ -11,7 +11,7 @@ const TEAM = [
 
 export default function TeamSection() {
   return (
-    <section id="team" className="py-24" style={{ background: '#f8fafc' }}>
+    <section id="team" className="py-24 bg-transparent">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeUp>
           <SectionHeader tag="People" title="Meet the Team" />
@@ -22,13 +22,12 @@ export default function TeamSection() {
               <Card className="text-center">
                 <CardBody className="p-6">
                   <div
-                    className="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-4"
-                    style={{ background: '#e8f0fe' }}
+                    className="w-16 h-16 mx-auto rounded-full flex items-center justify-center text-3xl mb-4 bg-slate-500/5 border border-[var(--glass-border)]"
                   >
                     {emoji}
                   </div>
-                  <h3 className="font-bold text-slate-900 text-[0.9375rem]">{name}</h3>
-                  <p className="text-xs text-slate-500 mt-1">{role}</p>
+                  <h3 className="font-bold text-[var(--text-primary)] text-[0.9375rem]">{name}</h3>
+                  <p className="text-xs text-[var(--text-secondary)] mt-1">{role}</p>
                 </CardBody>
               </Card>
             </StaggerItem>

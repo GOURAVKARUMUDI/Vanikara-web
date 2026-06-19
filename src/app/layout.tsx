@@ -2,7 +2,8 @@ import type { Metadata } from 'next';
 import './globals.css';
 import MainLayout from '@/components/MainLayout';
 import ClientLogger from '@/components/ClientLogger';
-import WhatsAppButton from '@/components/WhatsAppButton';
+import { ThemeProvider } from '@/components/layout/ThemeContext';
+import BackgroundSystem from '@/components/layout/BackgroundSystem';
 
 export const metadata: Metadata = {
   title: {
@@ -28,13 +29,20 @@ export default function RootLayout({
 }) {
   return (
     <html lang="en" data-scroll-behavior="smooth">
+      <head>
+        <link rel="manifest" href="/manifest.json" />
+        <meta name="theme-color" content="#1E6BD6" />
+      </head>
       <body className="antialiased">
-        <ClientLogger />
-        <MainLayout>
-          {children}
-        </MainLayout>
-        <WhatsAppButton variant="floating" />
+        <ThemeProvider>
+          <BackgroundSystem />
+          <ClientLogger />
+          <MainLayout>
+            {children}
+          </MainLayout>
+        </ThemeProvider>
       </body>
     </html>
   );
 }
+

@@ -65,16 +65,67 @@ export const isValidEmail = (email: string): boolean => {
 
 /**
  * Unified API response formatter.
+ * Returns the actual user-facing error string passed to the function.
+ * For security-sensitive contexts, callers should pass a safe message
+ * rather than raw internal error details.
  */
 export const apiResponse = (success: boolean, data: any = null, error: string | null = null) => {
-  return { success, data, error: error ? "Something went wrong" : null };
+  return { success, data, error };
 };
 
 /**
- * Secure logging - logs actual error but keeps user message generic.
+ * Structured error logging for server-side diagnostics.
+ * Logs detailed context for developers without exposing secrets to clients.
+ *
+ * @param context   - Component or module name (e.g. "Stream Route", "OpenAI Provider")
+ * @param error     - The error object or message string
+ * @param metadata  - Optional structured fields for log correlation
  */
-export const logError = (context: string, error: any) => {
-  console.error(`[SECURITY LOG][${new Date().toISOString()}][${context}]:`, error);
+export const logError = (
+  context: string,
+  error: any,
+  metadata?: {
+    requestId?: string;
+    model?: string;
+    statusCode?: number;
+    errorType?: string;
+    userId?: string;
+    latencyMs?: number;
+  }
+) => {
+  const entry: Record<string, any> = {
+    timestamp: new Date().toISOString(),
+    context,
+    message: error instanceof Error ? error.message : String(error),
+  };
+
+  if (error instanceof Error && error.stack) {
+    entry.stack = error.stack;
+  }
+
+  if (metadata) {
+    Object.assign(entry, metadata);
+  }
+
+  console.error(`[CYGMA][${entry.timestamp}][${context}]`, JSON.stringify(entry, null, 2));
+};
+
+/**
+ * Structured info logging for non-error diagnostics.
+ */
+export const logInfo = (
+  context: string,
+  message: string,
+  metadata?: Record<string, any>
+) => {
+  const entry: Record<string, any> = {
+    timestamp: new Date().toISOString(),
+    context,
+    message,
+    ...metadata,
+  };
+
+  console.log(`[CYGMA][${entry.timestamp}][${context}]`, JSON.stringify(entry, null, 2));
 };
 
 /**

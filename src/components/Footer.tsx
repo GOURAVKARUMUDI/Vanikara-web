@@ -1,86 +1,128 @@
-import Link from 'next/link';
-import { ReactNode } from 'react';
+import Link from "next/link";
+import { Mail, Linkedin, Github } from "lucide-react";
 
-/**
- * Footer: The application's universal footer.
- * Provides navigation links, social media connections, and legal information in a high-contrast dark theme.
- */
 export default function Footer() {
   const year = new Date().getFullYear();
 
   return (
-    <footer className="pt-16 pb-8" style={{ background: '#0f172a', color: '#94a3b8' }}>
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-
-        {/* Grid */}
-        <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-10 pb-12 border-b border-white/8">
-
-          {/* Brand */}
-          <div className="col-span-2 sm:col-span-2 lg:col-span-1">
-            <Link href="/" className="flex items-center gap-2.5 mb-4 no-underline">
-              <img src="/logo.png" alt="Vanikara Logo" className="w-10 h-auto" />
-              <span className="font-extrabold text-[1.15rem] text-white tracking-tight">VANIKARA INTELLIGENCE</span>
+    <footer className="pt-20 pb-10 border-t border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md transition-all duration-800">
+      <div className="max-w-6xl mx-auto px-6 lg:px-8">
+        
+        {/* Main Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-12 pb-16">
+          
+          {/* Brand Column */}
+          <div className="flex flex-col gap-4">
+            <Link href="/" className="flex items-center gap-2 group">
+              <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/10 border border-white/10 shadow-sm">
+                <img src="/logo.png" alt="Vanikara Logo" className="w-7 h-auto group-hover:scale-105 transition-transform" />
+              </div>
+              <span className="font-display font-black text-sm tracking-widest text-[var(--text-primary)]">
+                VANIKARA
+              </span>
             </Link>
-            <p className="text-sm leading-relaxed mb-5 max-w-[260px]">
-              Building innovative technology solutions that empower students and local communities.
+            <p className="text-xs text-[var(--text-secondary)] leading-relaxed max-w-[280px]">
+              Building Tomorrow Through Intelligence. An Indian technology company crafting scalable platforms, student ecosystems, and smart digital workflows.
             </p>
-            <div className="flex gap-2">
+            
+            {/* Social Links */}
+            <div className="flex gap-2.5 mt-2">
               {[
-                { s: 'li', h: 'https://linkedin.com/company/vanikara' },
-                { s: 'gh', h: 'https://github.com/vanikara' },
-                { s: 'mail', h: 'mailto:vanikara26@gmail.com' }
-              ].map(({ s, h }) => (
-                <a key={s} href={h} target={h.startsWith('http') ? "_blank" : "_self"} rel="noopener noreferrer" 
-                  className="w-9 h-9 rounded-lg flex items-center justify-center text-xs font-bold transition-all duration-200 hover:bg-blue-600 hover:text-white"
-                  style={{ background: 'rgba(255,255,255,0.07)', color: '#94a3b8' }}>
-                  {s.toUpperCase()}
+                { icon: <Linkedin className="w-4.5 h-4.5" />, href: "https://linkedin.com/company/vanikara", label: "LinkedIn" },
+                { icon: <Github className="w-4.5 h-4.5" />, href: "https://github.com/vanikara", label: "GitHub" },
+                { icon: <Mail className="w-4.5 h-4.5" />, href: "mailto:vanikara26@gmail.com", label: "Email" }
+              ].map(({ icon, href, label }) => (
+                <a
+                  key={label}
+                  href={href}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label={label}
+                  className="w-9 h-9 rounded-xl flex items-center justify-center border border-[var(--glass-border)] bg-[var(--glass-bg)] hover:bg-[var(--accent-color)] text-[var(--text-secondary)] hover:text-white transition-all duration-300 active:scale-95 shadow-sm"
+                >
+                  {icon}
                 </a>
               ))}
             </div>
           </div>
 
-          {/* Company */}
-          <div className="col-span-1">
-            <h4 className="text-white font-semibold text-sm mb-4">Company</h4>
-            <FooterLinks links={[
-              { href: '/about',     label: 'About Us'   },
-              { href: '/services',  label: 'Services'   },
-              { href: '/portfolio', label: 'Portfolio'  },
-              { href: '/contact',   label: 'Contact'    },
-            ]} />
+          {/* Links Column: Company */}
+          <div>
+            <h4 className="font-display font-bold text-xs uppercase tracking-widest text-[var(--text-primary)] mb-5">
+              Company
+            </h4>
+            <FooterLinks
+              links={[
+                { href: "/about", label: "About Us" },
+                { href: "/projects", label: "Our Projects" },
+                { href: "/products", label: "Our Products" },
+                { href: "/careers", label: "Join Careers" },
+                { href: "/press", label: "Press & Media" },
+                { href: "/brand", label: "Brand Identity" },
+                { href: "/investors", label: "Investor Relations" }
+              ]}
+            />
           </div>
 
-          {/* Tools */}
-          <div className="col-span-1">
-            <h4 className="text-white font-semibold text-sm mb-4">Internal Tools</h4>
-            <FooterLinks links={[
-              { href: '/ai',     label: 'AI Assistant' },
-              { href: '/upload', label: 'Secure Upload' },
-              { href: '/admin',  label: 'Admin Portal'  },
-            ]} />
+          {/* Links Column: Ecosystem */}
+          <div>
+            <h4 className="font-display font-bold text-xs uppercase tracking-widest text-[var(--text-primary)] mb-5">
+              Ecosystem Tools
+            </h4>
+            <FooterLinks
+              links={[
+                { href: "/ai", label: "CYGMA AI Node" },
+                { href: "/upload", label: "Secure Vault Upload" },
+                { href: "/dashboard", label: "Client Portal" },
+                { href: "/admin", label: "Admin Operating OS" }
+              ]}
+            />
           </div>
 
-          {/* Legal */}
-          <div className="col-span-2 sm:col-span-1">
-            <h4 className="text-white font-semibold text-sm mb-4">Legal</h4>
-            <FooterLinks links={[
-              { href: '/privacy', label: 'Privacy Policy' },
-              { href: '/terms',   label: 'Terms of Service' },
-            ]} />
-            <div className="mt-5">
-              <p className="text-xs mb-1 text-slate-500">Official Support</p>
-              <a href="mailto:vanikara26@gmail.com"
-                className="text-sm font-medium text-blue-400 hover:text-blue-300 transition-colors no-underline">
+          {/* Links Column: Legal / Contact */}
+          <div className="flex flex-col gap-6">
+            <div>
+              <h4 className="font-display font-bold text-xs uppercase tracking-widest text-[var(--text-primary)] mb-5">
+                Legal Controls
+              </h4>
+              <FooterLinks
+                links={[
+                  { href: "/privacy", label: "Privacy Policy" },
+                  { href: "/terms", label: "Terms & Conditions" },
+                  { href: "/cookies", label: "Cookie Policy" },
+                  { href: "/refund", label: "Refund Policy" },
+                  { href: "/security", label: "Security Page" },
+                  { href: "/legal", label: "Legal Info" }
+                ]}
+              />
+            </div>
+            <div>
+              <span className="block text-[10px] font-bold uppercase tracking-widest text-[var(--text-secondary)] mb-1">
+                Official Support
+              </span>
+              <a
+                href="mailto:vanikara26@gmail.com"
+                className="text-xs font-semibold text-[var(--accent-color)] hover:underline"
+              >
                 vanikara26@gmail.com
               </a>
             </div>
           </div>
+
         </div>
 
-        {/* Bottom */}
-        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-2 pt-8 text-xs text-slate-500">
-          <p>© {year} VANIKARA INTELLIGENCE PRIVATE LIMITED. All rights reserved.</p>
-          <p>Crafted with <span className="text-orange-400">♥</span> for innovation</p>
+        {/* Bottom Bar */}
+        <div className="flex flex-col md:flex-row md:items-end md:justify-between gap-6 pt-8 border-t border-[var(--glass-border)] text-[10px] font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+          <div className="space-y-1.5 max-w-xl">
+            <p className="text-[var(--text-primary)] font-extrabold font-display">VANIKARA Intelligence Private Limited</p>
+            <p>Incorporated under the Companies Act, 2013 • CIN: U47912AP2026PTC125340</p>
+            <p>© 2026 VANIKARA Intelligence Private Limited. All Rights Reserved.</p>
+          </div>
+          <div className="shrink-0 text-right">
+            <p>
+              Crafted with <span className="text-orange-500 animate-pulse">♥</span> for innovation
+            </p>
+          </div>
         </div>
 
       </div>
@@ -93,16 +135,15 @@ interface FooterLinkItem {
   label: string;
 }
 
-/**
- * FooterLinks: Sub-component for rendering lists of footer navigation items.
- */
 function FooterLinks({ links }: { links: FooterLinkItem[] }) {
   return (
-    <ul className="space-y-2.5 list-none p-0">
+    <ul className="space-y-3 list-none p-0 m-0">
       {links.map(({ href, label }) => (
         <li key={label}>
-          <Link href={href}
-            className="text-sm text-slate-400 hover:text-white transition-colors no-underline">
+          <Link
+            href={href}
+            className="text-xs text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:translate-x-1 inline-block transition-all duration-300"
+          >
             {label}
           </Link>
         </li>

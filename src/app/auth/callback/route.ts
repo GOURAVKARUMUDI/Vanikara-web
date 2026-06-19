@@ -34,14 +34,10 @@ export async function GET(request: Request) {
         }, { onConflict: 'user_id' });
 
         // Admin redirect logic
-        // User requested strict logic: 
-        // If email === 'gouravkarumudi6@gmail.com' -> /admin
-        // Else -> /dashboard
-        const targetEmail = "gouravkarumudi6@gmail.com";
-        const isAdmin = user.email === targetEmail;
+        const isUserAdmin = isAdmin(user.email);
         
         let path = "/dashboard";
-        if (isAdmin) {
+        if (isUserAdmin) {
           path = "/admin";
         } else {
           const next = searchParams.get('next');

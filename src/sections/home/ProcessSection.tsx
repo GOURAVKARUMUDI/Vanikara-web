@@ -10,7 +10,7 @@ const STEPS = [
 
 export default function ProcessSection() {
   return (
-    <section id="process" className="py-24" style={{ background: '#f8fafc' }}>
+    <section id="process" className="py-24 bg-transparent">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeUp>
           <SectionHeader tag="Our Process" title="How We Work" />
@@ -19,14 +19,13 @@ export default function ProcessSection() {
           {STEPS.map(({ step, title, desc }) => (
             <StaggerItem key={step}>
               <div
-                className="p-6 rounded-2xl bg-white border border-slate-100 h-full relative"
-                style={{ boxShadow: '0 1px 3px rgba(0,0,0,.06)' }}
+                className="p-6 rounded-2xl bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-md h-full relative shadow-sm hover:scale-[1.02] transition-transform"
               >
-                <span className="absolute top-5 right-5 text-3xl font-black text-slate-100 leading-none select-none">
+                <span className="absolute top-5 right-5 text-3xl font-black text-[var(--text-secondary)]/10 leading-none select-none">
                   {step}
                 </span>
-                <h3 className="font-bold text-slate-900 text-lg mb-2">{title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed">{desc}</p>
+                <h3 className="font-bold text-[var(--text-primary)] text-lg mb-2">{title}</h3>
+                <p className="text-[var(--text-secondary)] text-sm leading-relaxed">{desc}</p>
               </div>
             </StaggerItem>
           ))}

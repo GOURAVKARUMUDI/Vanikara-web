@@ -12,7 +12,7 @@ const TECH = [
 
 export default function TechStackSection() {
   return (
-    <section id="tech-stack" className="py-24 bg-white">
+    <section id="tech-stack" className="py-24 bg-transparent">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeUp>
           <SectionHeader tag="Technology" title="Our Tech Stack" />
@@ -21,8 +21,7 @@ export default function TechStackSection() {
           {TECH.map(({ icon, name }) => (
             <StaggerItem key={name}>
               <div
-                className="flex items-center gap-2.5 px-5 py-3.5 rounded-2xl bg-white border border-slate-100 font-semibold text-slate-800 text-sm"
-                style={{ boxShadow: '0 1px 3px rgba(0,0,0,.06)' }}
+                className="flex items-center gap-2.5 px-5 py-3.5 rounded-2xl bg-[var(--glass-bg)] border border-[var(--glass-border)] backdrop-blur-md font-semibold text-[var(--text-primary)] text-sm shadow-sm hover:scale-105 transition-transform"
               >
                 <span className="text-xl">{icon}</span> {name}
               </div>

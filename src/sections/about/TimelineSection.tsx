@@ -2,7 +2,7 @@ import { FadeUp } from '@/components/Animate';
 import SectionHeader from '@/components/ui/SectionHeader';
 
 const TIMELINE = [
-  { year: '2026', event: 'March 2026 — VANIKARA INTELLIGENCE PRIVATE LIMITED founded' },
+  { year: '2026', event: 'April 17, 2026 — VANIKARA INTELLIGENCE PRIVATE LIMITED incorporated' },
   { year: '2026', event: 'Initial product ideas and validation phase' },
   { year: '2026', event: 'Development started for Vanik marketplace' },
   { year: '2026', event: 'Development started for FriskFree platform' },
@@ -10,7 +10,7 @@ const TIMELINE = [
 
 export default function TimelineSection() {
   return (
-    <section id="timeline" className="py-24" style={{ background: '#f8fafc' }}>
+    <section id="timeline" className="py-24 bg-transparent">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeUp>
           <SectionHeader tag="Journey" title="Our Milestones" />
@@ -29,7 +29,7 @@ export default function TimelineSection() {
                 </div>
                 <div className="pt-1.5 pb-8">
                   <div className="font-bold text-blue-600 text-sm mb-0.5">{year}</div>
-                  <p className="text-slate-600 text-sm leading-relaxed">{event}</p>
+                  <p className="text-[var(--text-secondary)] text-sm leading-relaxed">{event}</p>
                 </div>
               </div>
             </FadeUp>

@@ -5,21 +5,21 @@ import PricingSection from '@/sections/services/PricingSection';
 import CTABanner from '@/sections/home/CTABanner';
 
 export const metadata: Metadata = { 
-  title: 'Services',
-  description: 'From software engineering to mobile app development, VANIKARA INTELLIGENCE PRIVATE LIMITED offers full-cycle technology solutions.'
+  title: 'What We Build',
+  description: 'Explore the digital platforms, student solutions, and AI ecosystems engineered by VANIKARA.'
 };
 
 /**
- * ServicesPage: Detailed overview of what Vanikara offers.
+ * ServicesPage: Detailed overview of what Vanikara builds.
  * Includes Services Grid, Pricing, and CTA Banner.
  */
 export default function ServicesPage() {
   return (
     <>
       <PageHero
-        tag="What We Offer"
-        title={<>Services Built for <span className="gradient-text">Scale</span></>}
-        subtitle="Comprehensive technology services from design to deployment. We partner with you at every stage."
+        tag="What We Build"
+        title={<>Platforms Built for <span className="gradient-text">Impact</span></>}
+        subtitle="We build innovative digital solutions, from student marketplaces to evolving AI ecosystems."
       />
       <ServicesGrid />
       <PricingSection />

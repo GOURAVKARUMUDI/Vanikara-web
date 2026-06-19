@@ -1,8 +1,9 @@
 import { StaggerGrid, StaggerItem } from '@/components/Animate';
 
 const PROJECTS = [
-  { tag: 'Marketplace', title: 'Vanik', desc: 'Second-hand marketplace with integrated binding and printing services for students.', stack: ['Next.js', 'Supabase', 'Vercel', 'Razorpay'], color: '#1E6BD6', bg: '#e8f0fe', emoji: '🛍️', metrics: [['2026', 'Started'], ['Building', 'Status'], ['6+', 'Team']] },
-  { tag: 'Discovery',    title: 'FriskFree', desc: 'Platform to find PGs and hostels based on university and location.', stack: ['React Native', 'Node.js', 'PostgreSQL', 'Google Maps'], color: '#FF7A00', bg: '#fff7ed', emoji: '🏠', metrics: [['2026', 'Started'], ['Building', 'Status'], ['6+', 'Team']] },
+  { tag: 'Marketplace', title: 'Vanik', desc: 'Second-hand marketplace with integrated binding and printing services for students.', stack: ['Next.js', 'Supabase', 'Vercel', 'Razorpay'], color: '#1E6BD6', bg: '#e8f0fe', emoji: '🛍️', metrics: [['2026', 'Started'], ['Beta', 'Phase'], ['65%', 'Progress']] },
+  { tag: 'Discovery',    title: 'FriskFree', desc: 'Platform to find PGs and hostels based on university and location.', stack: ['React Native', 'Node.js', 'PostgreSQL', 'Google Maps'], color: '#FF7A00', bg: '#fff7ed', emoji: '🏠', metrics: [['2026', 'Started'], ['Backend', 'Phase'], ['35%', 'Progress']] },
+  { tag: 'AI Ecosystem', title: 'CYGMA AI', desc: 'VANIKARA’s evolving AI ecosystem focused on intelligent automation.', stack: ['Python', 'LangChain', 'Next.js', 'OpenAI'], color: '#8B5CF6', bg: '#f5f3ff', emoji: '🧠', metrics: [['2026', 'Started'], ['Research', 'Phase'], ['15%', 'Progress']] },
 ];
 
 export default function ProjectsGrid() {

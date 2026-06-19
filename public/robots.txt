@@ -1,0 +1,5 @@
+# VANIKARA Intelligence robots.txt
+User-agent: *
+Allow: /
+
+Sitemap: https://vanikara-web.vercel.app/sitemap.xml

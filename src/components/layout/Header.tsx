@@ -19,7 +19,14 @@ export function Header() {
 
   return (
     <nav className="flex items-center justify-between px-8 py-4 bg-transparent border-b border-white/10">
-      <Link href="/" className="text-2xl font-bold text-white">VANIKARA INTELLIGENCE</Link>
+      <Link href="/" className="flex items-center gap-2 group">
+        <div className="w-8 h-8 rounded-xl flex items-center justify-center bg-white/10 border border-white/10 shadow-sm">
+          <img src="/logo.png" alt="Vanikara Logo" className="w-6 h-auto group-hover:scale-105 transition-transform" />
+        </div>
+        <span className="font-display font-black text-sm tracking-widest text-white">
+          VANIKARA
+        </span>
+      </Link>
       <div className="flex items-center gap-4">
         {u ? (
           <>

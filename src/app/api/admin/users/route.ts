@@ -1,0 +1,61 @@
+export const dynamic = "force-dynamic";
+
+import { NextResponse } from "next/server";
+import { supabaseService } from "@/utils/supabase/service";
+import { isAdmin } from "@/lib/isAdmin";
+import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
+import { apiResponse, logError } from "@/lib/security";
+
+export async function GET() {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user || !isAdmin(user.email)) {
+      return NextResponse.json(apiResponse(false, null, "Unauthorized"), { status: 401 });
+    }
+
+    const { data, error } = await supabaseService
+      .from("users")
+      .select("*")
+      .order("created_at", { ascending: false });
+
+    if (error) throw error;
+    return NextResponse.json(apiResponse(true, data || []));
+  } catch (error: any) {
+    logError("Admin Users GET", error);
+    return NextResponse.json(apiResponse(false, null, "Internal error"), { status: 500 });
+  }
+}
+
+export async function PATCH(req: Request) {
+  try {
+    const cookieStore = await cookies();
+    const supabase = createClient(cookieStore);
+    const { data: { user } } = await supabase.auth.getUser();
+
+    if (!user || !isAdmin(user.email)) {
+      return NextResponse.json(apiResponse(false, null, "Unauthorized"), { status: 401 });
+    }
+
+    const { id, role } = await req.json();
+    if (!id || !role) {
+      return NextResponse.json(apiResponse(false, null, "Missing required parameters"), { status: 400 });
+    }
+
+    const { data, error } = await supabaseService
+      .from("users")
+      .update({ role })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+    return NextResponse.json(apiResponse(true, data));
+  } catch (error: any) {
+    logError("Admin Users PATCH", error);
+    return NextResponse.json(apiResponse(false, null, "Internal error"), { status: 500 });
+  }
+}

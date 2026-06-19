@@ -1,102 +1,273 @@
-'use client';
+"use client";
 
-import { useState } from 'react';
-import PageHero from '@/components/ui/PageHero';
-import Button from '@/components/ui/Button';
+import { useState, useEffect, useRef } from "react";
+import { createClient } from "@/utils/supabase/client";
+import Sidebar from "@/components/ai/Sidebar";
+import ChatArea from "@/components/ai/ChatArea";
+import ContextPanel from "@/components/ai/ContextPanel";
+import Button from "@/components/ui/Button";
+import { ShieldCheck, LogIn, Compass, Terminal, ShieldAlert } from "lucide-react";
+
+interface Message {
+  id: string;
+  role: "user" | "assistant";
+  content: string;
+}
 
 export default function AIPage() {
-  const [p, setP] = useState('');
-  const [r, setR] = useState('');
-  const [l, setL] = useState(false);
+  const [user, setUser] = useState<any>(null);
+  const [currentConvId, setCurrentConvId] = useState<string | null>(null);
+  const [selectedModel, setSelectedModel] = useState("gpt-4o");
+  const [messages, setMessages] = useState<Message[]>([]);
+  const [streamingText, setStreamingText] = useState("");
+  const [isStreaming, setIsStreaming] = useState(false);
+  
+  // Right panel context grounding details
+  const [files, setFiles] = useState<any[]>([]);
+  const [activeContext, setActiveContext] = useState("");
+  
+  // Collapsible panels states
+  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isContextOpen, setIsContextOpen] = useState(true);
+  
+  const abortControllerRef = useRef<AbortController | null>(null);
+  const supabase = createClient();
 
-  const ask = async () => {
-    if (!p) return;
-    setL(true);
-    try {
-      const res = await fetch('/api/ai', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ prompt: p }),
-      });
-      const d = await res.json();
-      if (d.success) {
-        setR(d.data.reply);
-      } else {
-        setR(d.error || 'Failed to generate response');
+  useEffect(() => {
+    // Check authentication state
+    supabase.auth.getUser().then(({ data: { user } }) => {
+      setUser(user);
+    });
+
+    const { data: { subscription } } = supabase.auth.onAuthStateChange((_, session) => {
+      setUser(session?.user || null);
+    });
+
+    return () => {
+      if (subscription) subscription.unsubscribe();
+    };
+  }, []);
+
+  // Fetch messages when conversation ID changes
+  useEffect(() => {
+    if (!currentConvId || !user) {
+      setMessages([]);
+      return;
+    }
+
+    const fetchMessages = async () => {
+      const { data, error } = await supabase
+        .from("messages")
+        .select("*")
+        .eq("conversation_id", currentConvId)
+        .order("created_at", { ascending: true });
+
+      if (!error && data) {
+        setMessages(
+          data.map((m: any) => ({
+            id: m.id,
+            role: m.sender_role as "user" | "assistant",
+            content: m.content
+          }))
+        );
       }
-    } catch (err) {
-      setR('Connection error. Please try again.');
+    };
+
+    fetchMessages();
+  }, [currentConvId, user]);
+
+  const handleSendMessage = async (text: string) => {
+    if (isStreaming) return;
+
+    // Rate Limiting for Guest Users (unauthenticated)
+    if (!user) {
+      const now = Date.now();
+      const key = "cygma_guest_requests";
+      const oneDayMs = 24 * 60 * 60 * 1000;
+      let timestamps: number[] = [];
+
+      try {
+        const stored = localStorage.getItem(key);
+        if (stored) {
+          timestamps = JSON.parse(stored);
+        }
+      } catch (e) {
+        timestamps = [];
+      }
+
+      // Filter timestamps in the last 24h
+      timestamps = timestamps.filter(t => now - t < oneDayMs);
+
+      if (timestamps.length >= 50) {
+        const limitMsg: Message = {
+          id: crypto.randomUUID(),
+          role: "assistant",
+          content: "You have reached today's guest usage limit. Sign in to continue chatting with CYGMA AI."
+        };
+        setMessages(prev => [
+          ...prev,
+          { id: crypto.randomUUID(), role: "user", content: text },
+          limitMsg
+        ]);
+        return;
+      }
+
+      // Log request timestamp
+      timestamps.push(now);
+      localStorage.setItem(key, JSON.stringify(timestamps));
+    }
+
+    // Truncate guest query context (~4,000 tokens / 16,000 characters)
+    let processedText = text;
+    if (!user && text.length > 16000) {
+      processedText = text.slice(0, 16000) + "... [truncated]";
+    }
+
+    // Append user message immediately
+    const userMsg: Message = { id: crypto.randomUUID(), role: "user", content: text };
+    setMessages(prev => [...prev, userMsg]);
+    setIsStreaming(true);
+    setStreamingText("");
+
+    // Setup streaming controllers
+    const controller = new AbortController();
+    abortControllerRef.current = controller;
+
+    try {
+      // Build conversation history for guest multi-turn context
+      // For authenticated users, the backend fetches history from the database
+      const guestHistory = !user
+        ? messages.slice(-10).map(m => ({ role: m.role, content: m.content }))
+        : undefined;
+
+      // Streaming flow (Unified backend router)
+      const response = await fetch("/api/ai/stream", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          prompt: processedText,
+          model: selectedModel,
+          fileContext: activeContext,
+          conversationId: currentConvId,
+          ...(guestHistory ? { history: guestHistory } : {}),
+        }),
+        signal: controller.signal
+      });
+
+      if (!response.ok) {
+        // Try to extract a meaningful error from the response body
+        let errorMessage = "Failed to connect to CYGMA AI. Please try again.";
+        try {
+          const errBody = await response.json();
+          if (errBody?.error) errorMessage = errBody.error;
+        } catch {
+          // Response wasn't JSON, use default message
+        }
+        throw new Error(errorMessage);
+      }
+
+      const reader = response.body?.getReader();
+      const decoder = new TextDecoder();
+      let chunkText = "";
+
+      if (reader) {
+        while (true) {
+          const { done, value } = await reader.read();
+          if (done) break;
+
+          const chunk = decoder.decode(value, { stream: true });
+          
+          // Extract metadata if returned in first chunk
+          if (chunk.startsWith("[METADATA]:")) {
+            const metaLine = chunk.split("\n")[0];
+            const metaJson = JSON.parse(metaLine.replace("[METADATA]:", ""));
+            if (metaJson.conversationId && !currentConvId) {
+              setCurrentConvId(metaJson.conversationId);
+            }
+            // Skip enqueuing metadata token to user-facing prompt text area
+            const rest = chunk.replace(metaLine + "\n", "");
+            if (rest) {
+              chunkText += rest;
+              setStreamingText(chunkText);
+            }
+          } else {
+            chunkText += chunk;
+            setStreamingText(chunkText);
+          }
+        }
+      }
+
+      if (!controller.signal.aborted) {
+        const assistantMsg: Message = { id: crypto.randomUUID(), role: "assistant", content: chunkText };
+        setMessages(prev => [...prev, assistantMsg]);
+      }
+    } catch (err: any) {
+      if (err.name !== "AbortError") {
+        setMessages(prev => [
+          ...prev,
+          { id: crypto.randomUUID(), role: "assistant", content: err.message || "An unexpected error occurred. Please try again." }
+        ]);
+      }
     } finally {
-      setL(false);
+      setIsStreaming(false);
+      setStreamingText("");
+      abortControllerRef.current = null;
     }
   };
 
+  const handleStopGeneration = () => {
+    if (abortControllerRef.current) {
+      abortControllerRef.current.abort();
+      setIsStreaming(false);
+      setStreamingText("");
+    }
+  };
+
+  const handleNewChat = () => {
+    handleStopGeneration();
+    setCurrentConvId(null);
+    setMessages([]);
+  };
+
   return (
-    <>
-      <PageHero
-        tag="AI Assistant"
-        title={<>Explore the <span className="gradient-text">VANIKARA INTELLIGENCE AI Lab</span></>}
-        subtitle="Interact with our custom-trained models to solve problems or generate insights."
+    <div className="flex w-full h-[calc(100vh-4rem)] overflow-hidden bg-transparent relative animate-in fade-in duration-300">
+      
+      {/* 1. Collapsible Left Sidebar */}
+      <Sidebar
+        currentConvId={currentConvId}
+        setCurrentConvId={setCurrentConvId}
+        selectedModel={selectedModel}
+        setSelectedModel={setSelectedModel}
+        onNewChat={handleNewChat}
+        isOpen={isSidebarOpen}
+        setIsOpen={setIsSidebarOpen}
+        isAuthenticated={!!user}
       />
 
-      <section className="py-20 bg-white">
-        <div className="max-w-4xl mx-auto px-6">
-          <div className="bg-slate-50 border border-slate-200 rounded-[32px] p-8 shadow-sm">
-            <div className="space-y-6">
-              <div>
-                <label className="block text-sm font-bold text-slate-700 mb-2 uppercase tracking-wider">Your Prompt</label>
-                <textarea
-                  value={p}
-                  onChange={(e) => setP(e.target.value)}
-                  placeholder="Ask me anything about technology, students, or VANIKARA INTELLIGENCE..."
-                  className="w-full h-40 p-5 bg-white border border-slate-200 rounded-2xl text-slate-800 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 outline-none transition-all placeholder:text-slate-400"
-                />
-              </div>
+      {/* 2. Central Conversational Chat Area */}
+      <ChatArea
+        messages={messages}
+        setMessages={setMessages}
+        streamingText={streamingText}
+        isStreaming={isStreaming}
+        onSendMessage={handleSendMessage}
+        onStopGeneration={handleStopGeneration}
+        selectedModel={selectedModel}
+        isGrounded={!!activeContext}
+        isAuthenticated={!!user}
+      />
 
-              <Button 
-                onClick={ask} 
-                disabled={l || !p} 
-                className="w-full py-4 text-base shadow-lg shadow-blue-600/20"
-              >
-                {l ? (
-                  <span className="flex items-center gap-2">
-                    <span className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                    Analyzing Prompt...
-                  </span>
-                ) : 'Generate AI Response →'}
-              </Button>
+      {/* 3. Collapsible Right Context Utility Panel */}
+      <ContextPanel
+        isOpen={isContextOpen}
+        setIsOpen={setIsContextOpen}
+        files={files}
+        setFiles={setFiles}
+        activeContext={activeContext}
+        setActiveContext={setActiveContext}
+        isAuthenticated={!!user}
+      />
 
-              {r && (
-                <div className="mt-10 animate-in fade-in slide-in-from-bottom-4 duration-500">
-                  <div className="p-8 bg-white border border-blue-100 rounded-[28px] shadow-sm relative overflow-hidden group">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-blue-600/5 blur-3xl -mr-16 -mt-16 group-hover:bg-blue-600/10 transition-all duration-700"></div>
-                    <h3 className="text-xs font-black text-blue-600 mb-4 uppercase tracking-[0.2em] flex items-center gap-2">
-                      <span className="w-2 h-2 bg-blue-600 rounded-full animate-pulse" />
-                      AI Insight
-                    </h3>
-                    <p className="whitespace-pre-wrap text-slate-700 leading-relaxed font-medium">
-                      {r}
-                    </p>
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-
-          <div className="mt-20 grid grid-cols-1 md:grid-cols-3 gap-6">
-             {[
-               { t: 'Security First', d: 'All prompts are sanitized and logs are encrypted for your privacy.' },
-               { t: 'GPT Powered', d: 'Leveraging state-of-the-art models fine-tuned for building startups.' },
-               { t: 'Always Learning', d: 'Our AI Lab is constantly updated with new datasets and capabilities.' }
-             ].map((f, i) => (
-               <div key={i} className="p-6 bg-slate-50/50 rounded-2xl border border-slate-100">
-                 <h4 className="font-bold text-slate-900 mb-2">{f.t}</h4>
-                 <p className="text-xs text-slate-500 leading-relaxed">{f.d}</p>
-               </div>
-             ))}
-          </div>
-        </div>
-      </section>
-    </>
+    </div>
   );
 }

@@ -1,74 +1,131 @@
-import Link from 'next/link';
-import { FadeUp } from '@/components/Animate';
-import Badge from '@/components/ui/Badge';
+"use client";
 
-const STATS = [
-  ['📈', 'Active Listings', '2,400+'],
-  ['👥', 'Campus Users',    '8,000+'],
-  ['📦', 'Orders Served',   '12,000+'],
-];
+import Link from "next/link";
+import { FadeUp } from "@/components/Animate";
+import Badge from "@/components/ui/Badge";
+import Card, { CardBody } from "@/components/ui/Card";
+import { CheckCircle2, Server, Globe, Key, ShoppingBag, ArrowRight } from "lucide-react";
 
 export default function FlagshipProduct() {
+  const features = [
+    "Peer-to-peer student textbook trading bypasses offline brokers.",
+    "Integrated custom thesis printing and binding logistics pipelines.",
+    "Automated scheduling and local campus collection networks.",
+    "Real-time instant message routing between student nodes."
+  ];
+
+  const techStack = [
+    { name: "Next.js", desc: "React Server Components", icon: <Globe className="w-4 h-4 text-blue-500" /> },
+    { name: "Supabase RLS", desc: "Row-Level Security Controls", icon: <Key className="w-4 h-4 text-emerald-500" /> },
+    { name: "PostgreSQL", desc: "High Density Structured Data", icon: <Server className="w-4 h-4 text-indigo-500" /> },
+    { name: "Razorpay APIs", desc: "Secure Local Transaction Routing", icon: <ShoppingBag className="w-4 h-4 text-amber-500" /> }
+  ];
+
   return (
-    <section id="flagship-product" className="py-24 bg-white">
-      <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+    <section id="flagship-product" className="py-24 relative overflow-hidden">
+      {/* Background ambient light */}
+      <div className="absolute top-1/3 left-1/2 -translate-x-1/2 w-[500px] h-[500px] bg-[var(--accent-color)]/5 blur-[120px] rounded-full pointer-events-none -z-10 animate-pulse" />
+
+      <div className="max-w-6xl mx-auto px-6">
         <FadeUp>
-          <div
-            className="rounded-3xl p-8 sm:p-12 text-white"
-            style={{ background: 'linear-gradient(135deg,#1B2A4A,#1E3A6E)' }}
-          >
-            <div className="flex flex-col lg:flex-row gap-10 items-center">
-              {/* Copy */}
-              <div className="flex-1 min-w-0">
-                <Badge variant="orange" className="mb-5">🚀 Flagship Product</Badge>
-                <h2
-                  className="font-extrabold leading-tight mb-4"
-                  style={{ fontSize: 'clamp(1.75rem,3vw,2.5rem)' }}
-                >
-                  Student Marketplace Platform
-                </h2>
-                <p className="text-white/75 text-lg leading-relaxed mb-7">
-                  A comprehensive digital ecosystem for campus life — trade textbooks,
-                  print documents, and get on-campus deliveries, all from one app.
-                </p>
-                <div className="flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href="/contact"
-                    className="px-7 py-3 rounded-full font-semibold bg-white text-blue-600 hover:-translate-y-0.5 transition-all inline-flex items-center justify-center"
-                  >
-                    Request Demo
-                  </Link>
-                  <a
-                    href="#product-features"
-                    className="px-7 py-3 rounded-full font-semibold text-white border border-white/25 hover:bg-white/10 transition-all inline-flex items-center justify-center"
-                  >
-                    Learn More ↓
-                  </a>
+          <div className="text-center max-w-2xl mx-auto mb-16">
+            <span className="text-xs font-bold uppercase tracking-widest text-[var(--accent-color)] bg-[var(--glass-bg)] border border-[var(--glass-border)] px-3.5 py-1.5 rounded-full">
+              FLAGSHIP PLATFORM
+            </span>
+            <h2 className="font-display font-black text-3xl sm:text-4xl text-[var(--text-primary)] mt-6 uppercase">
+              Vanik Marketplace
+            </h2>
+            <p className="text-sm text-[var(--text-secondary)] mt-3">
+              Core campus student exchange and custom printing logistics ecosystem.
+            </p>
+          </div>
+        </FadeUp>
+
+        {/* Flagship Apple-style Showcase Layout */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-12 items-center">
+          
+          {/* Left Column: Product Info details */}
+          <div className="lg:col-span-5 space-y-6">
+            <FadeUp>
+              <div className="space-y-4">
+                <div className="flex flex-wrap gap-2.5">
+                  <Badge variant="orange">Core Platform</Badge>
+                  <span className="text-[10px] font-black uppercase tracking-wider px-3 py-1 rounded-full bg-slate-500/10 text-[var(--text-secondary)] border border-[var(--glass-border)] flex items-center gap-1.5">
+                    <span className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                    Active Beta Testing
+                  </span>
                 </div>
+                
+                <h3 className="font-display font-bold text-2xl text-[var(--text-primary)]">
+                  Student Logistics Reimagined
+                </h3>
+                <p className="text-xs sm:text-sm text-[var(--text-secondary)] leading-relaxed font-medium">
+                  Vanik bridges the gap between affordable textbook procurement and custom thesis binding. Students upload PDFs directly to local partner print nodes and list used books in a zero-commission catalog.
+                </p>
               </div>
 
-              {/* Stats widget */}
-              <div
-                className="w-full lg:w-72 shrink-0 rounded-2xl p-6 space-y-3"
-                style={{ background: 'rgba(255,255,255,.07)', border: '1px solid rgba(255,255,255,.1)' }}
-              >
-                {STATS.map(([icon, label, val]) => (
-                  <div
-                    key={label}
-                    className="flex items-center gap-3 p-3 rounded-xl"
-                    style={{ background: 'rgba(255,255,255,.07)' }}
-                  >
-                    <span className="text-xl">{icon}</span>
-                    <div className="min-w-0">
-                      <div className="text-[0.7rem] text-white/60">{label}</div>
-                      <div className="font-extrabold text-lg leading-tight">{val}</div>
-                    </div>
+              {/* Bullet Features list */}
+              <div className="space-y-3 pt-2">
+                {features.map((feat, idx) => (
+                  <div key={idx} className="flex gap-2.5 items-start text-xs text-[var(--text-secondary)]">
+                    <CheckCircle2 className="w-4 h-4 text-[var(--accent-color)] shrink-0 mt-0.5" />
+                    <span className="leading-relaxed font-semibold">{feat}</span>
                   </div>
                 ))}
               </div>
+
+              <div className="pt-4 flex flex-wrap gap-3">
+                <Link
+                  href="/contact?project=Vanik"
+                  className="px-7 py-3 rounded-full font-semibold bg-[var(--accent-color)] text-white hover:shadow-lg hover:shadow-blue-500/25 transition-all text-xs tracking-wider uppercase"
+                >
+                  Request Demo
+                </Link>
+                <Link
+                  href="/projects"
+                  className="px-7 py-3 rounded-full font-semibold border border-[var(--glass-border)] bg-[var(--glass-bg)] text-[var(--text-primary)] hover:bg-white/10 transition-all text-xs tracking-wider uppercase inline-flex items-center gap-1.5"
+                >
+                  Explore Showcase <ArrowRight className="w-3.5 h-3.5" />
+                </Link>
+              </div>
+            </FadeUp>
+          </div>
+
+          {/* Right Column: High Fidelity Mockup & Technical Spec */}
+          <div className="lg:col-span-7 space-y-6">
+            <FadeUp delay={0.15}>
+              <div className="relative overflow-hidden rounded-[2.5rem] border border-[var(--glass-border)] bg-[var(--glass-bg)] p-3 shadow-2xl backdrop-blur-md">
+                <img
+                  src="/images/vanik_mockup.png"
+                  alt="Vanik App Showcase"
+                  className="w-full h-auto rounded-[2rem] object-cover"
+                />
+              </div>
+            </FadeUp>
+
+            {/* Structured Tech Spec Grid */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              {techStack.map((tech, idx) => (
+                <FadeUp key={tech.name} delay={0.08 * (idx + 1)}>
+                  <Card hover className="h-full">
+                    <CardBody className="p-4 flex items-start gap-3">
+                      <div className="p-2 bg-slate-500/5 rounded-xl shrink-0">
+                        {tech.icon}
+                      </div>
+                      <div className="min-w-0 text-xs">
+                        <div className="font-extrabold text-[var(--text-primary)]">{tech.name}</div>
+                        <div className="text-[10px] text-[var(--text-secondary)] font-semibold leading-normal mt-0.5">
+                          {tech.desc}
+                        </div>
+                      </div>
+                    </CardBody>
+                  </Card>
+                </FadeUp>
+              ))}
             </div>
           </div>
-        </FadeUp>
+
+        </div>
       </div>
     </section>
   );

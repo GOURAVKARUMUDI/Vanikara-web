@@ -1,17 +1,10 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { sanitizeInput, detectThreat } from '../lib/security';
 
 export function useSecurity(initialValue: string = '') {
   const [value, setValue] = useState(initialValue);
-  const [risk, setRisk]   = useState<{ score: number; classification: 'low' | 'medium' | 'high' }>({ 
-    score: 0, 
-    classification: 'low' 
-  });
 
-  useEffect(() => {
-    const { score, classification } = detectThreat(value);
-    setRisk({ score, classification });
-  }, [value]);
+  const { score: riskScore, classification } = detectThreat(value);
 
   const handleChange = (newValue: string) => {
     setValue(newValue);
@@ -20,9 +13,9 @@ export function useSecurity(initialValue: string = '') {
   return {
     value,
     safeValue: sanitizeInput(value),
-    riskScore: risk.score,
-    classification: risk.classification,
-    isBlocked: risk.score > 60,
+    riskScore,
+    classification,
+    isBlocked: riskScore > 60,
     handleChange
   };
 }

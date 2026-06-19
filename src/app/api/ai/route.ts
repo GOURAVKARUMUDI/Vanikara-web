@@ -1,44 +1,144 @@
 export const dynamic = "force-dynamic";
 
 import { NextResponse } from 'next/server';
-import { openai } from '@/lib/openai';
+import { getProviderForModel, CygmaAIError } from '@/lib/ai/providers';
+import type { AIMessage } from '@/lib/ai/providers';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
-import { sanitize, apiResponse, logError } from "@/lib/security";
+import { sanitize, apiResponse, logError, logInfo } from "@/lib/security";
+
+const CYGMA_SYSTEM_INSTRUCTION = `You are CYGMA AI, the flagship intelligence platform developed by VANIKARA Intelligence Private Limited.
+Deliver responses with a professional, accurate, and highly technical tone. 
+Your core fields are software engineering, academic support, cybersecurity architecture, coding, and business operations advice.
+Identify clearly as CYGMA AI, powered by state-of-the-art base models connected through secure company API nodes. 
+Do not claim to have trained or own the underlying base models.
+Format responses using Markdown when appropriate: use code blocks for code, bold for emphasis, bullet points for lists.`;
 
 export async function POST(req: Request) {
+  const requestId = crypto.randomUUID();
+  const startTime = Date.now();
+
   try {
-    const sb = createClient(await cookies());
+    // 1. Authenticate
+    const cookieStore = await cookies();
+    const sb = createClient(cookieStore);
     const { data: { user } } = await sb.auth.getUser();
 
-    if (!user) return NextResponse.json(apiResponse(false, null, "Unauthorized"), { status: 401 });
-
-    if (!openai) {
-      logError("AI Config", "OpenAI not configured");
-      return NextResponse.json(apiResponse(false, null, "AI not configured"), { status: 500 });
+    if (!user) {
+      return NextResponse.json(
+        apiResponse(false, null, "Unauthorized access. Please log in."),
+        { status: 401 }
+      );
     }
 
-    const { prompt } = await req.json();
-    if (!prompt) return NextResponse.json(apiResponse(false, null, "Prompt required"), { status: 400 });
+    // 2. Parse and validate request body
+    let body: any;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        apiResponse(false, null, "Invalid JSON in request body."),
+        { status: 400 }
+      );
+    }
 
-    const sPrompt = sanitize(prompt).slice(0, 2000);
+    const { prompt, model = 'gpt-4o', conversationId } = body;
 
-    const res = await openai.chat.completions.create({
-      model: 'gpt-3.5-turbo',
-      messages: [{ role: 'user', content: sPrompt }],
+    if (!prompt || typeof prompt !== 'string' || !prompt.trim()) {
+      return NextResponse.json(
+        apiResponse(false, null, "Prompt parameter is required and must be a non-empty string."),
+        { status: 400 }
+      );
+    }
+
+    if (prompt.length > 32_000) {
+      return NextResponse.json(
+        apiResponse(false, null, "Prompt exceeds maximum length."),
+        { status: 413 }
+      );
+    }
+
+    const sPrompt = sanitize(prompt).slice(0, 32_000);
+
+    logInfo('AI Route', 'Text request received', {
+      requestId,
+      model,
+      promptLength: sPrompt.length,
+      userId: user.id,
     });
 
-    const reply = res.choices[0].message.content || 'No response';
+    // 3. Build conversation history for multi-turn context
+    let conversationHistory: AIMessage[] = [];
 
-    await sb.from('ai_logs').insert({
-      user_id: user.id,
-      prompt: sPrompt,
-      response: reply,
+    if (conversationId) {
+      try {
+        const { data: dbMessages } = await sb
+          .from('messages')
+          .select('sender_role, content')
+          .eq('conversation_id', conversationId)
+          .order('created_at', { ascending: true })
+          .limit(20);
+
+        if (dbMessages && dbMessages.length > 0) {
+          conversationHistory = dbMessages.map((m: any) => ({
+            role: m.sender_role as 'user' | 'assistant',
+            content: m.content,
+          }));
+        }
+      } catch (histErr) {
+        logError('AI Route', 'Failed fetching conversation history', { requestId });
+      }
+    }
+
+    // 4. Generate text response
+    const provider = getProviderForModel(model);
+
+    const allMessages: AIMessage[] = [
+      ...conversationHistory,
+      { role: 'user', content: sPrompt },
+    ];
+
+    const reply = await provider.generateText(allMessages, {
+      model,
+      systemInstruction: CYGMA_SYSTEM_INSTRUCTION,
+      requestId,
+    });
+
+    // 5. Log to database
+    try {
+      await sb.from('ai_logs').insert({
+        user_id: user.id,
+        prompt: sPrompt,
+        response: reply,
+      });
+    } catch (dbErr) {
+      logError('AI Route', 'Failed logging to ai_logs', { requestId });
+    }
+
+    logInfo('AI Route', 'Text request completed', {
+      requestId,
+      model,
+      replyLength: reply.length,
+      latencyMs: Date.now() - startTime,
     });
 
     return NextResponse.json(apiResponse(true, { reply }));
   } catch (e: any) {
-    logError("AI API", e);
-    return NextResponse.json(apiResponse(false, null, "Internal error"), { status: 500 });
+    const classified = e instanceof CygmaAIError ? e : null;
+
+    logError('AI Route', e, {
+      requestId,
+      statusCode: classified?.statusCode || 500,
+      errorType: classified?.type || 'UNKNOWN',
+      latencyMs: Date.now() - startTime,
+    });
+
+    const userMessage = classified?.userMessage
+      || "Something went wrong while processing your request. Please try again.";
+
+    return NextResponse.json(
+      apiResponse(false, null, userMessage),
+      { status: classified?.statusCode || 500 }
+    );
   }
 }

@@ -48,8 +48,20 @@ To exercise these rights, please contact us at vanikara26@gmail.com.`,
       content: `We may update our Privacy Policy from time to time. We will notify you of any changes by posting the new Privacy Policy on this page and updating the "Last updated" date. You are advised to review this Privacy Policy periodically for any changes.`,
     },
     {
-      title: '8. Contact Us',
-      content: `If you have any questions about this Privacy Policy, please contact us at vanikara26@gmail.com or through our Contact page.`,
+      id: 'section-8',
+      title: '8. CYGMA AI Workspace & Model Processing',
+      content: `CYGMA AI is a proprietary software workspace developed by VANIKARA Intelligence Private Limited. It does not train, host, or own the connected third-party base models (such as those provided by OpenAI). 
+
+Conversations initiated by authenticated users are stored securely on our database nodes to provide persistent chat histories and custom workspace settings. Guest user conversations are processed in transient memory sessions and are not stored.
+
+If you upload documents (PDF, DOCX, PPTX, TXT, CSV), the workspace extracts the text, segments it, and constructs temporary retrieval indices (RAG) to ground answers. Extracted document details are stored on your private portal profile.
+
+Users can request immediate, permanent deletion of their chat records and uploaded document data at any time from their Settings panel. All session conversation data is kept for a standard retention duration of 30 days unless deleted sooner by the user.`,
+    },
+    {
+      id: 'section-9',
+      title: '9. Contact Us',
+      content: `For questions, clarifications, or requests regarding this Privacy Policy, please reach out to us at vanikara26@gmail.com.`,
     },
   ];
 

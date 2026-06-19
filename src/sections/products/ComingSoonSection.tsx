@@ -9,7 +9,7 @@ const UPCOMING = [
 
 export default function ComingSoonSection() {
   return (
-    <section id="coming-soon" className="py-24" style={{ background: '#f8fafc' }}>
+    <section id="coming-soon" className="py-24 bg-transparent">
       <div className="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
         <FadeUp>
           <SectionHeader tag="In the Pipeline" title="What's Next" />
@@ -18,21 +18,19 @@ export default function ComingSoonSection() {
           {UPCOMING.map(({ icon, title, desc }) => (
             <StaggerItem key={title}>
               <div
-                className="p-7 rounded-2xl bg-white border border-dashed border-slate-200 relative opacity-75"
-                style={{ boxShadow: '0 1px 3px rgba(0,0,0,.04)' }}
+                className="p-7 rounded-2xl bg-[var(--glass-bg)] border border-dashed border-[var(--glass-border)] backdrop-blur-md relative opacity-75 hover:opacity-100 transition-opacity"
               >
                 <span
-                  className="absolute top-4 right-4 text-[0.65rem] font-bold px-2.5 py-0.5 rounded-full"
-                  style={{ background: '#e8f0fe', color: '#1E6BD6' }}
+                  className="absolute top-4 right-4 text-[0.65rem] font-bold px-2.5 py-0.5 rounded-full bg-slate-500/5 text-[var(--accent-color)] border border-[var(--glass-border)]"
                 >
                   SOON
                 </span>
                 <div className="text-3xl mb-4">{icon}</div>
-                <h3 className="font-bold text-slate-900 mb-2">{title}</h3>
-                <p className="text-slate-500 text-sm leading-relaxed mb-6">{desc}</p>
-                <div className="pt-5 border-t border-slate-50">
+                <h3 className="font-bold text-[var(--text-primary)] mb-2">{title}</h3>
+                <p className="text-[var(--text-secondary)] text-sm leading-relaxed mb-6">{desc}</p>
+                <div className="pt-5 border-t border-[var(--glass-border)]">
                   <a href={`/contact?product=${encodeURIComponent(title)}`} 
-                     className="text-xs font-bold text-blue-600 hover:text-blue-700 flex items-center gap-1 group">
+                     className="text-xs font-bold text-[var(--accent-color)] hover:opacity-85 flex items-center gap-1 group">
                     Express Interest <span className="group-hover:translate-x-0.5 transition-transform">→</span>
                   </a>
                 </div>
