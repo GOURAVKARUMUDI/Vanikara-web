@@ -20,7 +20,7 @@ export default function FogController() {
       far: 11.0,
     },
     light: {
-      color: new THREE.Color("#dbeafe"), // Soft pastel blue-slate atmospheric fog to match background gradients
+      color: new THREE.Color("#d0def0"), // Soft muted blue-slate atmospheric fog to match the new background gradients
       near: 3.5,
       far: 10.0,
     },

@@ -65,25 +65,24 @@ export default function GlassObjects() {
     }
     currentDistanceMult.current = THREE.MathUtils.lerp(currentDistanceMult.current, targetDistanceMult, 0.06);
 
-    // Normalize speeds for display refresh rates
-    const timeScale = Math.min(3.0, delta / 0.0166) * config.orbitSpeedMult;
-
     fragments.forEach((frag, idx) => {
       const group = fragmentRefs.current[idx];
       if (group) {
-        // Self rotation of the group
-        group.rotation.x += frag.rotSpeed.x * 0.002 * timeScale;
-        group.rotation.y += frag.rotSpeed.y * 0.002 * timeScale;
-        group.rotation.z += frag.rotSpeed.z * 0.002 * timeScale;
-
-        // Orbit speed multiplier during success passes
-        const speedMult = (view === "success" ? 6.0 : 1.0) * timeScale;
-        const angle = time * frag.orbitSpeed * speedMult + frag.phase;
+        // Orbit speed multiplier during success passes, supporting prefers-reduced-motion
+        const orbitSpeed = frag.orbitSpeed * 10 * config.orbitSpeedMult;
+        const speedMult = view === "success" ? 6.0 : 1.0;
+        const angle = time * orbitSpeed * speedMult + frag.phase;
         const radius = Math.sqrt(frag.pos.x * frag.pos.x + frag.pos.z * frag.pos.z) * currentDistanceMult.current;
 
+        // Perfect horizontal planar orbit around the center (no vertical jitter/bobbing)
         group.position.x = Math.cos(angle) * radius;
         group.position.z = Math.sin(angle) * radius;
-        group.position.y = frag.pos.y + Math.sin(time * 0.65 + frag.phase) * 0.12 * timeScale;
+        group.position.y = frag.pos.y;
+
+        // Self rotation of the group based strictly on time
+        group.rotation.x = time * frag.rotSpeed.x * 0.12 * config.orbitSpeedMult;
+        group.rotation.y = time * frag.rotSpeed.y * 0.12 * config.orbitSpeedMult;
+        group.rotation.z = time * frag.rotSpeed.z * 0.12 * config.orbitSpeedMult;
 
         if (view === "success") {
           // Centrifugal displacement: push fragments outward to clear camera view
