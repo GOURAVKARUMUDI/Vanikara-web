@@ -66,10 +66,6 @@ export default function LoginPage() {
     }
   };
 
-  // Trigger Microsoft Sign-in placeholder
-  const handleMicrosoftLogin = () => {
-    setErrorMsg("Microsoft credentials restricted to employee accounts. Please sign in via Google.");
-  };
 
   // Passwordless Email OTP / Magic Link flow
   const handleEmailMagicLink = async (e: React.FormEvent) => {
@@ -239,12 +235,8 @@ export default function LoginPage() {
                       Continue with Google
                     </button>
 
-                    {/* Method 2: Microsoft OAuth */}
-                    <button
-                      onClick={handleMicrosoftLogin}
-                      disabled={isLoading}
-                      className="w-full py-3 px-5 rounded-full border border-[var(--glass-border)] bg-[var(--glass-bg)]/20 text-[var(--text-secondary)] hover:text-[var(--text-primary)] hover:border-[var(--glass-border)] shadow-sm font-semibold text-xs tracking-wider flex items-center justify-center gap-2.5 transition-all select-none duration-300 hover:scale-[1.01] active:scale-98"
-                    >
+                    {/* Method 2: Microsoft — Employee accounts only */}
+                    <div className="w-full py-3 px-5 rounded-full border border-dashed border-[var(--glass-border)] bg-[var(--glass-bg)]/10 text-[var(--text-secondary)] font-semibold text-xs tracking-wider flex items-center justify-center gap-2.5 select-none opacity-60 cursor-default" title="Restricted to VANIKARA employee accounts">
                       <svg className="w-4 h-4 shrink-0" viewBox="0 0 23 23">
                         <path fill="#f3f2f1" d="M0 0h23v23H0z" />
                         <path fill="#f25022" d="M1 1h10v10H1z" />
@@ -252,8 +244,8 @@ export default function LoginPage() {
                         <path fill="#00a4ef" d="M1 12h10v10H1z" />
                         <path fill="#ffb900" d="M12 12h10v10H12z" />
                       </svg>
-                      Continue with Microsoft
-                    </button>
+                      Microsoft — Employee Accounts Only
+                    </div>
 
                     {/* Method 3: Passwordless Email OTP */}
                     <button

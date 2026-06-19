@@ -60,6 +60,7 @@ export default function Footer() {
                 { href: "/about", label: "About Us" },
                 { href: "/projects", label: "Our Projects" },
                 { href: "/products", label: "Our Products" },
+                { href: "/services", label: "What We Build" },
                 { href: "/careers", label: "Join Careers" },
                 { href: "/press", label: "Press & Media" },
                 { href: "/brand", label: "Brand Identity" },
@@ -95,6 +96,8 @@ export default function Footer() {
                   { href: "/terms", label: "Terms & Conditions" },
                   { href: "/cookies", label: "Cookie Policy" },
                   { href: "/security", label: "Security Page" },
+                  { href: "/legal", label: "Legal Information" },
+                  { href: "/refund", label: "Refund Policy" },
                   { onClick: openPreferences, label: "Privacy & Cookie Settings" }
                 ]}
               />
