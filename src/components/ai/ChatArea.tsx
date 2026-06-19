@@ -131,6 +131,11 @@ export default function ChatArea({
     e.preventDefault();
     if (!input.trim() || isStreaming) return;
     
+    if (input.trim().length > 10000) {
+      alert("Prompt exceeds the maximum allowed length of 10,000 characters. Please shorten your inquiry.");
+      return;
+    }
+    
     // Stop recording speech before sending
     if (isListening && recognitionRef.current) {
       recognitionRef.current.stop();

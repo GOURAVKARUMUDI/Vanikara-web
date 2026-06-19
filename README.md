@@ -1,39 +1,66 @@
-# VANIKARA INTELLIGENCE PRIVATE LIMITED
+# VANIKARA INTELLIGENCE PRIVATE LIMITED — Flagship Portal
 
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+Welcome to the production repository for **VANIKARA Intelligence Private Limited**. This system serves as the primary student portal, print-binding logistics tracking interface, dynamic settings hub, and CYGMA AI playground.
 
-## Getting Started
+---
 
-First, run the development server:
+## 1. Technical Stack Architecture
+
+The portal is a high-performance Next.js application structured around:
+- **Core Engine**: Next.js App Router, React 19, Framer Motion.
+- **3D Universe Scene**: React Three Fiber (R3F), Three.js rendering a custom shader-dust crystal sphere.
+- **Database & Auth**: Supabase DB nodes with strict Row-Level Security (RLS).
+- **Styling**: Tailwind CSS & Glassmorphism design tokens.
+- **Email Gateway**: Transactional SMTP routing via Nodemailer.
+- **Payment Controller**: Stripe API payment routing.
+
+---
+
+## 2. Developer Operations Commands
+
+To start developing or running local validation sweeps, use:
 
 ```bash
+# Install dependencies
+npm install
+
+# Run the local development server (with dev tools active)
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
+
+# Compile TypeScript and bundle optimized production code
+npm run build
+
+# Verify codebase checks for lint styling rules
+npm run lint
+
+# Run Playwright end-to-end browser tests
+npx playwright install # (Only required on first run to setup browser binaries)
+npm run test:e2e
+
+# Run the lightweight REST/HTML E2E validator script
+npm run test:validate
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+---
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## 3. Operations & Reliability Infrastructures
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+### API Health Checks
+Exposed at `/api/health`, this endpoint verifies connection loops in real-time:
+- **Database**: Connects to Supabase, running a fast table inquiry.
+- **OpenAI AI Node**: Asserts configuration keys are set and start with `sk-`.
+- **Admissions Mail SMTP**: Dispatches connection tests to GMAIL SMTP.
 
-## Learn More
+### IP-Based Sliding Rate Limiter
+Implemented inside `/src/lib/rateLimit.ts` and active across all `/api/ai` prompt entries:
+- Limits requests to **30 calls per minute** per client IP.
+- Responds with HTTP `429 Too Many Requests` alongside standard `Retry-After` header metrics to block scrapers and protect token budgets.
 
-To learn more about Next.js, take a look at the following resources:
+### Global Error Monitors
+Uncaught UI exceptions and promise rejections are automatically intercepted in `ClientLogger.tsx` and POSTed to `/api/logs/report`. This formats client-side crash dumps into server logs.
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+---
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-
+## 4. Documentation References
+- Review the operations checklist and restoration policies in the [RC1 Operations Guide](/docs/RC1_GUIDE.md).
+- Adjust cookie consent preferences directly in the global consent banner control modal.

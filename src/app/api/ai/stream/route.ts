@@ -5,6 +5,7 @@ import { cookies } from 'next/headers';
 import { getProviderForModel, CygmaAIError } from '@/lib/ai/providers';
 import type { AIMessage } from '@/lib/ai/providers';
 import { sanitize, logError, logInfo } from '@/lib/security';
+import { isRateLimited } from "@/lib/rateLimit";
 
 // ─────────────────────────────────────────────
 // Constants
@@ -150,6 +151,22 @@ export async function POST(req: Request) {
   const startTime = Date.now();
 
   try {
+    // 0. Rate Limiting Check
+    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "127.0.0.1";
+    const limitCheck = isRateLimited(ip);
+    if (limitCheck.limited) {
+      return new Response(
+        JSON.stringify({ error: "Too many requests. Please wait a minute before querying CYGMA again." }),
+        { 
+          status: 429,
+          headers: {
+            "Content-Type": "application/json",
+            "Retry-After": String(Math.ceil((limitCheck.reset - Date.now()) / 1000))
+          }
+        }
+      );
+    }
+    
     // 1. Parse and validate request body
     let body: any;
     try {

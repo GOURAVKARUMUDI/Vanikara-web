@@ -6,6 +6,7 @@ import type { AIMessage } from '@/lib/ai/providers';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { sanitize, apiResponse, logError, logInfo } from "@/lib/security";
+import { isRateLimited } from "@/lib/rateLimit";
 
 const CYGMA_SYSTEM_INSTRUCTION = `You are CYGMA AI, the flagship intelligence platform developed by VANIKARA Intelligence Private Limited.
 Deliver responses with a professional, accurate, and highly technical tone. 
@@ -19,6 +20,21 @@ export async function POST(req: Request) {
   const startTime = Date.now();
 
   try {
+    // 0. Rate Limiting Check
+    const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "127.0.0.1";
+    const limitCheck = isRateLimited(ip);
+    if (limitCheck.limited) {
+      return NextResponse.json(
+        apiResponse(false, null, "Too many requests. Please wait a minute before querying CYGMA again."),
+        { 
+          status: 429,
+          headers: {
+            "Retry-After": String(Math.ceil((limitCheck.reset - Date.now()) / 1000))
+          }
+        }
+      );
+    }
+
     // 1. Authenticate
     const cookieStore = await cookies();
     const sb = createClient(cookieStore);

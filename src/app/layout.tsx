@@ -35,6 +35,29 @@ export default function RootLayout({
       <head>
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#1E6BD6" />
+        <script
+          type="application/ld+json"
+          dangerouslySetInnerHTML={{
+            __html: JSON.stringify({
+              "@context": "https://schema.org",
+              "@type": "Organization",
+              "name": "VANIKARA Intelligence Private Limited",
+              "alternateName": "VANIKARA",
+              "url": "https://vanikara.com",
+              "logo": "https://vanikara.com/logo.png",
+              "contactPoint": {
+                "@type": "ContactPoint",
+                "contactType": "customer support",
+                "email": "vanikara26@gmail.com",
+                "areaServed": "IN",
+                "availableLanguage": "en"
+              },
+              "sameAs": [
+                "https://github.com/GOURAVKARUMUDI/Vanikara-web"
+              ]
+            })
+          }}
+        />
       </head>
       <body className="antialiased">
         <ThemeProvider>
