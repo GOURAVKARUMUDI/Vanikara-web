@@ -36,7 +36,7 @@ export default function IntelligenceWorld() {
       <Canvas
         camera={{ position: [0, 1.2, 12], fov: 45 }}
         gl={{
-          antialias: currentProfile !== "battery" && currentProfile !== "low",
+          antialias: true,
           alpha: true,
           powerPreference: "high-performance",
           toneMapping: THREE.ACESFilmicToneMapping,
@@ -62,7 +62,7 @@ export default function IntelligenceWorld() {
         <ParticleField count={config.maxParticles} />
 
         {/* Orbital rings */}
-        {currentProfile !== "battery" && <EnergyRings />}
+        <EnergyRings />
 
         {/* Floating crystal dodecahedrons */}
         <GlassObjects />

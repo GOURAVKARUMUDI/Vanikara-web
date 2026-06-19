@@ -108,28 +108,15 @@ export default function GlassObjects() {
           position={frag.pos}
         >
           <dodecahedronGeometry args={[frag.size]} />
-          {config.useHeavyTransmission ? (
-            <MeshTransmissionMaterial
-              transmission={0.94}
-              roughness={0.06}
-              thickness={0.35}
-              chromaticAberration={0.18}
-              ior={1.5}
-              color={fragColor}
-              backside={true}
-            />
-          ) : (
-            <meshPhysicalMaterial
-              transmission={0.8}
-              roughness={0.1}
-              thickness={0.5}
-              ior={1.5}
-              color={fragColor}
-              transparent
-              opacity={0.65}
-              depthWrite={false}
-            />
-          )}
+          <MeshTransmissionMaterial
+            transmission={0.94}
+            roughness={0.06}
+            thickness={0.35}
+            chromaticAberration={0.18}
+            ior={1.5}
+            color={fragColor}
+            backside={true}
+          />
         </mesh>
       ))}
     </>

@@ -42,7 +42,7 @@ export default function AIPlanet() {
   const currentSecondaryGlowOpacity = useRef(1.0);
 
   // Generate a cluster of neural particles inside the glass core
-  const innerParticleCount = currentProfile === "battery" ? 20 : 80;
+  const innerParticleCount = 80;
   const [particlePositions] = useMemo(() => {
     const rand = createSeededRandom(12345);
     const pos = new Float32Array(innerParticleCount * 3);
@@ -157,14 +157,12 @@ export default function AIPlanet() {
   return (
     <group ref={coreRef}>
       {/* Internal point light inside the crystal sphere */}
-      {currentProfile !== "battery" && (
-        <pointLight 
-          color={isDark ? "#60a5fa" : "#e0f2fe"} 
-          intensity={isDark ? 3.0 : 2.0} 
-          distance={5.0} 
-          decay={1.8}
-        />
-      )}
+      <pointLight 
+        color={isDark ? "#60a5fa" : "#e0f2fe"} 
+        intensity={isDark ? 3.0 : 2.0} 
+        distance={5.0} 
+        decay={1.8}
+      />
 
       {/* A. Core Base Glow Node */}
       <mesh ref={glowRef}>
@@ -210,32 +208,19 @@ export default function AIPlanet() {
       {/* D. Main Glass Core Sphere */}
       <mesh ref={glassSphereRef}>
         <icosahedronGeometry args={[1.22, 3]} />
-        {config.useHeavyTransmission ? (
-          <MeshTransmissionMaterial
-            transmission={0.98}
-            roughness={isDark ? 0.02 : 0.04}
-            thickness={isDark ? 0.85 : 1.8}
-            distortion={0.12}
-            temporalDistortion={0.04}
-            chromaticAberration={isDark ? 1.1 : 1.45}
-            anisotropicBlur={0.15}
-            ior={isDark ? 1.72 : 1.68} // Higher refractive index for rich refractions in both modes
-            color={sphereColor}
-            backside={true}
-            transmissionSampler={true}
-          />
-        ) : (
-          <meshPhysicalMaterial
-            transmission={0.85}
-            roughness={isDark ? 0.05 : 0.1}
-            thickness={isDark ? 1.0 : 2.0}
-            ior={isDark ? 1.6 : 1.5}
-            color={sphereColor}
-            transparent
-            opacity={0.65}
-            depthWrite={false}
-          />
-        )}
+        <MeshTransmissionMaterial
+          transmission={0.98}
+          roughness={isDark ? 0.02 : 0.04}
+          thickness={isDark ? 0.85 : 1.8}
+          distortion={0.12}
+          temporalDistortion={0.04}
+          chromaticAberration={isDark ? 1.1 : 1.45}
+          anisotropicBlur={0.15}
+          ior={isDark ? 1.72 : 1.68} // Higher refractive index for rich refractions in both modes
+          color={sphereColor}
+          backside={true}
+          transmissionSampler={true}
+        />
       </mesh>
     </group>
   );

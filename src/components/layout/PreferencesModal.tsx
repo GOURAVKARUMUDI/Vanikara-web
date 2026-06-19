@@ -13,7 +13,7 @@ import Button from "@/components/ui/Button";
  */
 export default function PreferencesModal() {
   const { showModal, consent, closePreferences, savePreferences, acceptAll, rejectOptional } = useConsent();
-  const { profile, currentProfile, fps, setProfileOverride, detectedSpecs } = usePerformance();
+  const { profile, currentProfile, fps, setProfileOverride, detectedSpecs, reduceMotion, setReduceMotion } = usePerformance();
 
   const [activeTab, setActiveTab] = useState<"privacy" | "performance">("privacy");
 
@@ -61,39 +61,7 @@ export default function PreferencesModal() {
     savePreferences(localPrefs);
   };
 
-  // Profile metadata
-  const profilesList: { value: PerformanceOverride; label: string; desc: string }[] = [
-    { 
-      value: "auto", 
-      label: "Auto (Recommended)", 
-      desc: "Dynamically benchmarks frame latency to optimize density on the fly without lag." 
-    },
-    { 
-      value: "ultra", 
-      label: "Ultra", 
-      desc: "Targets 120 FPS. Max particle simulation, post-processing bloom, and glass refractions." 
-    },
-    { 
-      value: "high", 
-      label: "High", 
-      desc: "Targets 90 FPS. Full particle counts, standard post-processing, and refracted lighting." 
-    },
-    { 
-      value: "medium", 
-      label: "Medium", 
-      desc: "Targets 60 FPS. standard particle volumes and light physical materials." 
-    },
-    { 
-      value: "low", 
-      label: "Low", 
-      desc: "Targets 60 FPS. Minimal particles, disabled post-processing, and standard transparent materials." 
-    },
-    { 
-      value: "battery", 
-      label: "Battery Saver", 
-      desc: "Targets 30 FPS. Static background, minimal particle counts, and simplified camera bounds." 
-    }
-  ];
+  // Profile metadata (disabled)
 
   return (
     <AnimatePresence>
@@ -273,33 +241,33 @@ export default function PreferencesModal() {
               {activeTab === "performance" && (
                 <div className="space-y-5">
                   <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed font-semibold">
-                    Customize the 3D rendering density. Choosing lower profiles will reduce particle count, disable heavy refraction passes, and save battery life.
+                    Optimized high-quality rendering is enabled globally. You can manage motion effects below to suit your accessibility preferences.
                   </p>
 
-                  {/* Graphics Profiles grid selector */}
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                    {profilesList.map((p) => {
-                      const isActive = profile === p.value;
-                      return (
-                        <button
-                          type="button"
-                          key={p.value}
-                          onClick={() => setProfileOverride(p.value)}
-                          className={`flex flex-col text-left p-3.5 rounded-2xl border transition-all cursor-pointer outline-none focus:ring-2 focus:ring-[var(--accent-color)] ${
-                            isActive 
-                              ? "bg-[var(--accent-color)]/10 border-[var(--accent-color)] text-[var(--text-primary)]" 
-                              : "bg-slate-500/5 border-[var(--glass-border)] text-[var(--text-secondary)] hover:bg-slate-500/10 hover:border-slate-500/25"
-                          }`}
-                        >
-                          <span className={`text-[10px] font-black uppercase tracking-wider ${isActive ? "text-[var(--accent-color)]" : "text-[var(--text-primary)]"}`}>
-                            {p.label}
-                          </span>
-                          <span className="text-[9px] font-medium leading-normal mt-1 opacity-80">
-                            {p.desc}
-                          </span>
-                        </button>
-                      );
-                    })}
+                  {/* Reduce Motion toggle option */}
+                  <div className="flex items-start justify-between gap-6 p-4 rounded-2xl bg-slate-500/5 border border-[var(--glass-border)]">
+                    <div className="space-y-1 text-xs">
+                      <h4 className="font-bold text-[var(--text-primary)]">Reduce Motion</h4>
+                      <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
+                        Halts camera orbit paths and dynamic particle drift movements for accessibility. Visual shaders and premium materials remain fully active.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => setReduceMotion(!reduceMotion)}
+                      className={`w-10 h-6 rounded-full p-1 transition-all duration-300 cursor-pointer shrink-0 mt-0.5 relative outline-none focus:ring-2 focus:ring-[var(--accent-color)] ${
+                        reduceMotion ? "bg-[var(--accent-color)]" : "bg-slate-500/20"
+                      }`}
+                      aria-checked={reduceMotion}
+                      role="switch"
+                      aria-label="Toggle reduce motion"
+                    >
+                      <div
+                        className={`w-4 h-4 rounded-full bg-white shadow-md transition-transform duration-300 ${
+                          reduceMotion ? "translate-x-4" : "translate-x-0"
+                        }`}
+                      />
+                    </button>
                   </div>
 
                   {/* Telemetry Display */}
@@ -315,8 +283,8 @@ export default function PreferencesModal() {
                         <span className="font-mono text-green-500">{fps} FPS</span>
                       </div>
                       <div className="flex justify-between border-b border-white/5 py-1">
-                        <span>Active Quality Preset</span>
-                        <span className="font-mono text-[var(--text-primary)] uppercase">{currentProfile}</span>
+                        <span>Engine Configuration</span>
+                        <span className="font-mono text-[var(--text-primary)] uppercase">{reduceMotion ? "High-Quality (Reduced Motion)" : "High-Quality (Optimized)"}</span>
                       </div>
                       <div className="flex justify-between border-b border-white/5 py-1">
                         <span>CPU logical Cores</span>
@@ -361,7 +329,7 @@ export default function PreferencesModal() {
               
               {/* Left text feedback */}
               <div className="text-[8px] font-black uppercase text-[var(--text-secondary)] tracking-wider">
-                Status: <strong className="text-[var(--text-primary)]">{activeTab === "privacy" ? "Cookie Cache Active" : "Adaptive Engine Running"}</strong>
+                Status: <strong className="text-[var(--text-primary)]">{activeTab === "privacy" ? "Cookie Cache Active" : "Optimized Pipeline Active"}</strong>
               </div>
 
               {/* Action buttons */}
