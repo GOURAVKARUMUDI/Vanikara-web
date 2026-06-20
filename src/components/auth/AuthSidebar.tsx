@@ -9,7 +9,8 @@ export default function AuthSidebar() {
     <motion.div
       initial={{ opacity: 0, x: 50, filter: "blur(10px)" }}
       animate={{ opacity: 1, x: 0, filter: "blur(0px)" }}
-      transition={{ duration: 1.0, delay: 0.4, ease: "easeOut" }}
+      exit={{ opacity: 0, x: 50, filter: "blur(10px)", transition: { duration: 0.6, ease: "easeIn" } }}
+      transition={{ duration: 0.8, delay: 0.15, ease: "easeOut" }}
       className="hidden lg:flex flex-col w-80 p-6 bg-[var(--glass-bg)] border border-[var(--glass-border)] rounded-[2.5rem] shadow-xl backdrop-blur-xl shrink-0 h-[calc(100vh-8rem)] relative overflow-hidden group select-none"
     >
       <div className="absolute top-0 right-0 w-32 h-32 bg-[var(--accent-color)]/5 blur-3xl rounded-full -mr-16 -mt-16 group-hover:bg-[var(--accent-color)]/10 transition-colors" />

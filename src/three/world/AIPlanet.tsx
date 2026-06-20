@@ -23,7 +23,7 @@ function createSeededRandom(seed: number) {
  */
 export default function AIPlanet() {
   const { resolvedTheme } = useTheme();
-  const { view } = useCygmaWorld();
+  const { view, sceneReady } = useCygmaWorld();
   const { config, currentProfile } = usePerformance();
   const theme = resolvedTheme;
   const isDark = theme === "dark";
@@ -33,6 +33,7 @@ export default function AIPlanet() {
   const secondaryGlowRef = useRef<THREE.Mesh>(null);
   const innerParticlesRef = useRef<THREE.Points>(null);
   const glassSphereRef = useRef<THREE.Mesh>(null);
+  const pointLightRef = useRef<THREE.PointLight>(null);
 
   // Dynamic tracking refs for smooth interpolations
   const currentGlassScale = useRef(1.0);
@@ -40,6 +41,7 @@ export default function AIPlanet() {
   const currentParticlesScale = useRef(1.0);
   const currentGlowOpacity = useRef(1.0);
   const currentSecondaryGlowOpacity = useRef(1.0);
+  const revealProgress = useRef(0);
 
   // Generate a cluster of neural particles inside the glass core
   const innerParticleCount = 80;
@@ -61,17 +63,29 @@ export default function AIPlanet() {
   }, [innerParticleCount]);
 
   useFrame((state, delta) => {
+    // 1. Keep fully hidden and locked until scene graph compiles
+    if (!sceneReady) {
+      if (coreRef.current) {
+        coreRef.current.scale.set(0, 0, 0);
+      }
+      revealProgress.current = 0;
+      return;
+    }
+
+    // Advance reveal progress (over 3.0s total, fading in over first 1.5s)
+    if (revealProgress.current < 3.0) {
+      revealProgress.current = Math.min(3.0, revealProgress.current + delta);
+    }
+    const timeSinceReady = revealProgress.current;
+    const revealOpacity = Math.min(1.0, timeSinceReady / 1.5);
+
     const time = state.clock.getElapsedTime();
 
-    // dolly scale logic on start
-    let scale = 0;
-    if (time > 2.0) {
-      const alpha = Math.min(1.0, (time - 2.0) / 2.5);
-      const c1 = 1.70158;
-      const c3 = c1 + 1;
-      const easeOutBack = 1 + c3 * Math.pow(alpha - 1, 3) + c1 * Math.pow(alpha - 1, 2);
-      scale = easeOutBack;
-    }
+    // Easing the scale from 0 to 1 over the 1.5s reveal
+    const c1 = 1.70158;
+    const c3 = c1 + 1;
+    const easeOutBack = revealOpacity === 1 ? 1 : 1 + c3 * Math.pow(revealOpacity - 1, 3) + c1 * Math.pow(revealOpacity - 1, 2);
+    let scale = easeOutBack;
 
     // Shrink scale to fade planet out during camera success pass-through
     if (view === "success") {
@@ -79,6 +93,7 @@ export default function AIPlanet() {
     }
 
     if (coreRef.current) {
+      // Scale is modulated by reveal progress
       coreRef.current.scale.set(scale, scale, scale);
       coreRef.current.rotation.y = time * 0.08 * config.orbitSpeedMult;
       coreRef.current.rotation.x = 0;
@@ -102,13 +117,10 @@ export default function AIPlanet() {
       targetGlowOpacity = 0.0;
       targetSecondaryOpacity = 0.0;
     } else if (view === "ai") {
-      // Scale glass sphere way up to cover camera and prevent near plane clipping
       targetGlassScale = 4.2;
-      // Shrink & dim glow meshes so they don't block the screen inside the core
       targetGlowScale = 0.15;
       targetGlowOpacity = 0.01;
       targetSecondaryOpacity = 0.005;
-      // Expand neural particle field inside the core to create a floating network room
       targetParticlesScale = 2.4;
     }
 
@@ -122,6 +134,11 @@ export default function AIPlanet() {
     if (glassSphereRef.current) {
       const gs = currentGlassScale.current;
       glassSphereRef.current.scale.set(gs, gs, gs);
+      if (glassSphereRef.current.material && !Array.isArray(glassSphereRef.current.material)) {
+        const mat = glassSphereRef.current.material as THREE.Material;
+        mat.transparent = true;
+        mat.opacity = revealOpacity;
+      }
     }
 
     if (glowRef.current) {
@@ -130,7 +147,7 @@ export default function AIPlanet() {
       const pulse = (1.0 + Math.sin(time * pulseRate * config.orbitSpeedMult) * pulseAmp) * currentGlowScale.current;
       glowRef.current.scale.set(pulse, pulse, pulse);
       if (glowRef.current.material && !Array.isArray(glowRef.current.material)) {
-        (glowRef.current.material as THREE.Material).opacity = currentGlowOpacity.current;
+        (glowRef.current.material as THREE.Material).opacity = currentGlowOpacity.current * revealOpacity;
       }
     }
 
@@ -138,15 +155,32 @@ export default function AIPlanet() {
       const s = currentGlowScale.current * 1.05;
       secondaryGlowRef.current.scale.set(s, s, s);
       if (secondaryGlowRef.current.material && !Array.isArray(secondaryGlowRef.current.material)) {
-        (secondaryGlowRef.current.material as THREE.Material).opacity = currentSecondaryGlowOpacity.current;
+        (secondaryGlowRef.current.material as THREE.Material).opacity = currentSecondaryGlowOpacity.current * revealOpacity;
       }
     }
 
     if (innerParticlesRef.current) {
       const ps = currentParticlesScale.current;
       innerParticlesRef.current.scale.set(ps, ps, ps);
-      innerParticlesRef.current.rotation.y = -time * 0.12 * config.orbitSpeedMult;
-      innerParticlesRef.current.rotation.x = time * 0.04 * config.orbitSpeedMult;
+
+      if (!innerParticlesRef.current.userData.time) {
+        innerParticlesRef.current.userData.time = 0;
+      }
+      if (timeSinceReady >= 1.5) {
+        innerParticlesRef.current.userData.time += delta;
+      }
+      const activePTime = innerParticlesRef.current.userData.time;
+
+      innerParticlesRef.current.rotation.y = -activePTime * 0.12 * config.orbitSpeedMult;
+      innerParticlesRef.current.rotation.x = activePTime * 0.04 * config.orbitSpeedMult;
+      if (innerParticlesRef.current.material && !Array.isArray(innerParticlesRef.current.material)) {
+        (innerParticlesRef.current.material as THREE.Material).opacity = (isDark ? 0.95 : 0.65) * revealOpacity;
+      }
+    }
+
+    if (pointLightRef.current) {
+      const baseIntensity = isDark ? 2.0 : 1.4;
+      pointLightRef.current.intensity = baseIntensity * revealOpacity;
     }
   });
 
@@ -158,8 +192,9 @@ export default function AIPlanet() {
     <group ref={coreRef}>
       {/* Internal point light inside the crystal sphere */}
       <pointLight 
+        ref={pointLightRef}
         color={isDark ? "#60a5fa" : "#e0f2fe"} 
-        intensity={isDark ? 2.0 : 1.4} 
+        intensity={0} 
         distance={5.0} 
         decay={1.8}
       />
@@ -170,7 +205,7 @@ export default function AIPlanet() {
         <meshBasicMaterial
           color={primaryGlowColor}
           transparent
-          opacity={isDark ? 0.75 : 0.5}
+          opacity={0}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
@@ -181,7 +216,7 @@ export default function AIPlanet() {
         <meshBasicMaterial
           color={accentGlowColor}
           transparent
-          opacity={0.3}
+          opacity={0}
           blending={THREE.AdditiveBlending}
         />
       </mesh>
@@ -198,7 +233,7 @@ export default function AIPlanet() {
           size={0.038}
           color={isDark ? "#e2e8f0" : "#0f172a"}
           transparent
-          opacity={isDark ? 0.95 : 0.65}
+          opacity={0}
           sizeAttenuation
           depthWrite={false}
           blending={isDark ? THREE.AdditiveBlending : THREE.NormalBlending}
@@ -208,19 +243,34 @@ export default function AIPlanet() {
       {/* D. Main Glass Core Sphere */}
       <mesh ref={glassSphereRef}>
         <icosahedronGeometry args={[1.22, 3]} />
-        <MeshTransmissionMaterial
-          transmission={0.98}
-          roughness={isDark ? 0.02 : 0.04}
-          thickness={isDark ? 0.85 : 1.8}
-          distortion={0.12}
-          temporalDistortion={0.04}
-          chromaticAberration={isDark ? 1.1 : 1.45}
-          anisotropicBlur={0.15}
-          ior={isDark ? 1.72 : 1.68} // Higher refractive index for rich refractions in both modes
-          color={sphereColor}
-          backside={true}
-          transmissionSampler={true}
-        />
+        {config.useHeavyTransmission ? (
+          <MeshTransmissionMaterial
+            transmission={0.98}
+            roughness={isDark ? 0.02 : 0.04}
+            thickness={isDark ? 0.85 : 1.8}
+            distortion={0.12}
+            temporalDistortion={0.04}
+            chromaticAberration={isDark ? 1.1 : 1.45}
+            anisotropicBlur={0.15}
+            ior={isDark ? 1.72 : 1.68} // Higher refractive index for rich refractions in both modes
+            color={sphereColor}
+            backside={true}
+            transmissionSampler={true}
+            transparent
+            opacity={0}
+          />
+        ) : (
+          <meshPhysicalMaterial
+            transmission={0.9}
+            roughness={isDark ? 0.05 : 0.1}
+            thickness={isDark ? 0.85 : 1.5}
+            ior={isDark ? 1.5 : 1.45}
+            color={sphereColor}
+            transparent
+            opacity={0}
+            depthWrite={false}
+          />
+        )}
       </mesh>
     </group>
   );

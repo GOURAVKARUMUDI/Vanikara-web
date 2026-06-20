@@ -1,7 +1,7 @@
 "use client";
 
-import React from "react";
-import { Canvas } from "@react-three/fiber";
+import React, { useEffect, useRef } from "react";
+import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { useCygmaWorld } from "@/context/CygmaWorldContext";
@@ -20,13 +20,40 @@ import GlassObjects from "./GlassObjects";
 import AIPlanet from "./AIPlanet";
 
 /**
+ * SceneInitializer: Compiles WebGL programs/shaders for all objects
+ * currently in the scene tree to prevent initial compilation stutters.
+ */
+function SceneInitializer() {
+  const { gl, scene, camera } = useThree();
+  const { setSceneReady } = useCygmaWorld();
+  const compiledRef = useRef(false);
+  const frameCountRef = useRef(0);
+
+  useFrame(() => {
+    if (!compiledRef.current) {
+      gl.compile(scene, camera);
+      compiledRef.current = true;
+    }
+
+    if (frameCountRef.current < 3) {
+      frameCountRef.current++;
+      if (frameCountRef.current === 3) {
+        setSceneReady(true);
+      }
+    }
+  });
+
+  return null;
+}
+
+/**
  * IntelligenceWorld: The top-level 3D wrapper rendering a persistent Canvas.
  * Anchors the entire website's visual identity.
  */
 export default function IntelligenceWorld() {
-  const { view } = useCygmaWorld();
+  const { view, sceneReady } = useCygmaWorld();
   const { resolvedTheme } = useTheme();
-  const { config, currentProfile } = usePerformance();
+  const { config } = usePerformance();
 
   const initialFogColor = resolvedTheme === "dark" ? "#020617" : "#c8d7e6";
   const bloomIntensity = view === "success" ? 5.5 : resolvedTheme === "dark" ? 1.25 : 0.65;
@@ -43,6 +70,9 @@ export default function IntelligenceWorld() {
         }}
         dpr={config.dpr}
       >
+        {/* Force early shader compilation and scene ready synchronizations */}
+        <SceneInitializer />
+
         <fog attach="fog" args={[initialFogColor, 4, 11]} />
 
         {/* Global Camera interpolation */}
@@ -56,16 +86,16 @@ export default function IntelligenceWorld() {
         <ThemeLighting />
 
         {/* Neural Network Segments Grid */}
-        <NeuralNetwork nodeCount={config.neuralNetworkNodeCount} />
+        <NeuralNetwork key={`neural-net-${config.neuralNetworkNodeCount}`} nodeCount={config.neuralNetworkNodeCount} />
 
         {/* 600+ Space dust energy particles */}
-        <ParticleField count={config.maxParticles} />
+        <ParticleField key={`particles-${config.maxParticles}`} count={config.maxParticles} />
 
         {/* Orbital rings */}
         <EnergyRings />
 
         {/* Floating crystal dodecahedrons */}
-        <GlassObjects />
+        <GlassObjects key={`glass-objects-${config.glassObjectsCount}`} />
 
         {/* Core Glass Sphere */}
         <AIPlanet />
@@ -82,6 +112,13 @@ export default function IntelligenceWorld() {
           </EffectComposer>
         )}
       </Canvas>
+
+      {/* Black full-screen reveal cover layout block */}
+      <div 
+        className={`absolute inset-0 z-50 bg-[#030712] transition-opacity duration-[1500ms] ease-in-out pointer-events-none ${
+          sceneReady ? "opacity-0" : "opacity-100"
+        }`}
+      />
     </div>
   );
 }

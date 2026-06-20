@@ -98,7 +98,7 @@ export default function Card({ children, className = "", hover = true, style }: 
       
       {/* 2. Glass Specular highlight sheen overlay */}
       {hover && (
-        <div className="absolute inset-0 pointer-events-none border border-white/10 dark:border-white/5 rounded-2xl z-20" />
+        <div className="absolute inset-0 pointer-events-none border border-white/10 dark:border-white/5 rounded-[inherit] z-20" />
       )}
 
       <div className="relative z-10 w-full h-full">

@@ -37,11 +37,17 @@ export const logger = {
    * Errors are always logged, even in production.
    */
   error: (message: string, error?: unknown, context?: unknown): void => {
-    console.error(`%c${getPrefix('ERROR')}: ${message}`, 'color: #ef4444; font-weight: bold;', {
-      error,
-      context,
-      timestamp: new Date().toISOString(),
-    });
+    console.error(`%c[VANIKARA_INTELLIGENCE-ERROR]: ${message}`, 'color: #ef4444; font-weight: bold;');
+    if (error) {
+      if (error instanceof Error) {
+        console.error(error);
+      } else {
+        console.error('Error Details:', error);
+      }
+    }
+    if (context) {
+      console.error('Context:', context);
+    }
   },
 
   /**
@@ -69,8 +75,13 @@ export const logger = {
    * Standardized helper for form interaction events.
    */
   form: (name: string, status: 'submit' | 'success' | 'failure' | 'validation_error', data?: unknown): void => {
-    const level = status === 'failure' || status === 'validation_error' ? 'warn' : 'info';
-    logger[level](`Form [${name}] - ${status}`, data || '');
+    if (status === 'failure') {
+      logger.error(`Form [${name}] - failure`, data);
+    } else if (status === 'validation_error') {
+      logger.warn(`Form [${name}] - validation_error`, data || '');
+    } else {
+      logger.info(`Form [${name}] - ${status}`, data || '');
+    }
   },
 
   /**

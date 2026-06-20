@@ -22,11 +22,14 @@ function createSeededRandom(seed: number) {
  * Centrifugal displacement offsets their positions during success passes.
  */
 export default function GlassObjects() {
-  const { view } = useCygmaWorld();
+  const { view, sceneReady } = useCygmaWorld();
   const { resolvedTheme } = useTheme();
   const { config } = usePerformance();
   const fragmentRefs = useRef<THREE.Group[]>([]);
   const currentDistanceMult = useRef(1.0);
+  
+  const revealProgress = useRef(0);
+  const activeTimeRef = useRef(0);
 
   // Generate floating crystal polyhedrons based on performance profile
   const fragments = useMemo(() => {
@@ -57,7 +60,27 @@ export default function GlassObjects() {
   }, [config.glassObjectsCount]);
 
   useFrame((state, delta) => {
-    const time = state.clock.getElapsedTime();
+    if (!sceneReady) {
+      revealProgress.current = 0;
+      fragments.forEach((frag, idx) => {
+        const group = fragmentRefs.current[idx];
+        if (group) {
+          group.scale.set(0, 0, 0);
+        }
+      });
+      return;
+    }
+
+    if (revealProgress.current < 3.0) {
+      revealProgress.current = Math.min(3.0, revealProgress.current + delta);
+    }
+    const timeSinceReady = revealProgress.current;
+    const revealOpacity = Math.min(1.0, timeSinceReady / 1.5);
+
+    if (timeSinceReady >= 1.5) {
+      activeTimeRef.current += delta;
+    }
+    const activeTime = activeTimeRef.current;
 
     let targetDistanceMult = 1.0;
     if (view === "ai") {
@@ -71,7 +94,7 @@ export default function GlassObjects() {
         // Orbit speed multiplier during success passes, supporting prefers-reduced-motion
         const orbitSpeed = frag.orbitSpeed * 10 * config.orbitSpeedMult;
         const speedMult = view === "success" ? 6.0 : 1.0;
-        const angle = time * orbitSpeed * speedMult + frag.phase;
+        const angle = activeTime * orbitSpeed * speedMult + frag.phase;
         const radius = Math.sqrt(frag.pos.x * frag.pos.x + frag.pos.z * frag.pos.z) * currentDistanceMult.current;
 
         // Perfect horizontal planar orbit around the center (no vertical jitter/bobbing)
@@ -79,24 +102,34 @@ export default function GlassObjects() {
         group.position.z = Math.sin(angle) * radius;
         group.position.y = frag.pos.y;
 
-        // Self rotation of the group based strictly on time
-        group.rotation.x = time * frag.rotSpeed.x * 0.12 * config.orbitSpeedMult;
-        group.rotation.y = time * frag.rotSpeed.y * 0.12 * config.orbitSpeedMult;
-        group.rotation.z = time * frag.rotSpeed.z * 0.12 * config.orbitSpeedMult;
+        // Scale by reveal progress
+        group.scale.set(revealOpacity, revealOpacity, revealOpacity);
+
+        // Self rotation of the group
+        group.rotation.x = activeTime * frag.rotSpeed.x * 0.12 * config.orbitSpeedMult;
+        group.rotation.y = activeTime * frag.rotSpeed.y * 0.12 * config.orbitSpeedMult;
+        group.rotation.z = activeTime * frag.rotSpeed.z * 0.12 * config.orbitSpeedMult;
 
         if (view === "success") {
           // Centrifugal displacement: push fragments outward to clear camera view
           group.position.x *= 1.15;
           group.position.z *= 1.15;
         }
+
+        // Set opacity of mesh material
+        group.traverse((child) => {
+          if (child instanceof THREE.Mesh && child.material) {
+            const mat = child.material as THREE.Material;
+            mat.transparent = true;
+            mat.opacity = revealOpacity;
+          }
+        });
       }
     });
   });
 
   const isDark = resolvedTheme === "dark";
   const fragColor = isDark ? "#93c5fd" : "#e0f2fe";
-  const lightColor = isDark ? "#38bdf8" : "#f97316";
-  const lightIntensity = isDark ? 0.6 : 0.35;
 
   return (
     <>
@@ -110,22 +143,31 @@ export default function GlassObjects() {
         >
           <mesh>
             <dodecahedronGeometry args={[frag.size]} />
-            <MeshTransmissionMaterial
-              transmission={0.94}
-              roughness={0.06}
-              thickness={0.35}
-              chromaticAberration={0.18}
-              ior={1.5}
-              color={fragColor}
-              backside={true}
-            />
+            {config.useHeavyTransmission ? (
+              <MeshTransmissionMaterial
+                transmission={0.94}
+                roughness={0.06}
+                thickness={0.35}
+                chromaticAberration={0.18}
+                ior={1.5}
+                color={fragColor}
+                backside={true}
+                transparent
+                opacity={0}
+              />
+            ) : (
+              <meshPhysicalMaterial
+                transmission={0.85}
+                roughness={0.1}
+                thickness={0.35}
+                ior={1.4}
+                color={fragColor}
+                transparent
+                opacity={0}
+                depthWrite={false}
+              />
+            )}
           </mesh>
-          <pointLight
-            color={lightColor}
-            intensity={lightIntensity}
-            distance={2.0}
-            decay={2}
-          />
         </group>
       ))}
     </>

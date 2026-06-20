@@ -270,7 +270,78 @@ input, textarea, select { font-family: inherit; }
   text-wrap: balance;
 }
 
+/* ── Dark Mode Glassmorphism Clipping Bug Fix ── */
+/* Fixes WebKit/Blink backdrop-filter square corner bleed under 3D transforms/hovers.
+   By moving the backdrop-filter to a pseudo-element inside the overflow-hidden parent,
+   the browser clips the blur layer to the card's border-radius. */
+html[data-theme="dark"] .glass-card,
+html[data-theme="dark"] .liquid-glass,
+html[data-theme="dark"] [class*="backdrop-blur"] {
+  backdrop-filter: none !important;
+  -webkit-backdrop-filter: none !important;
+  position: relative;
+  isolation: isolate;
+}
 
+html[data-theme="dark"] .glass-card,
+html[data-theme="dark"] .liquid-glass {
+  overflow: hidden; /* Ensures child layers are clipped to rounded corners */
+}
+
+html[data-theme="dark"] .glass-card::before,
+html[data-theme="dark"] .liquid-glass::before,
+html[data-theme="dark"] [class*="backdrop-blur"]::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  pointer-events: none;
+  z-index: -1;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+html[data-theme="dark"] .glass-card::before {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+html[data-theme="dark"] .liquid-glass::before {
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+
+/* Map Tailwind backdrop-blur classes to matching pseudo-element blur values */
+html[data-theme="dark"] .backdrop-blur-sm::before {
+  backdrop-filter: blur(4px) !important;
+  -webkit-backdrop-filter: blur(4px) !important;
+}
+
+html[data-theme="dark"] .backdrop-blur-md::before,
+html[data-theme="dark"] .backdrop-blur::before {
+  backdrop-filter: blur(12px) !important;
+  -webkit-backdrop-filter: blur(12px) !important;
+}
+
+html[data-theme="dark"] .backdrop-blur-lg::before {
+  backdrop-filter: blur(16px) !important;
+  -webkit-backdrop-filter: blur(16px) !important;
+}
+
+html[data-theme="dark"] .backdrop-blur-xl::before {
+  backdrop-filter: blur(24px) !important;
+  -webkit-backdrop-filter: blur(24px) !important;
+}
+
+html[data-theme="dark"] .backdrop-blur-2xl::before {
+  backdrop-filter: blur(40px) !important;
+  -webkit-backdrop-filter: blur(40px) !important;
+}
+
+html[data-theme="dark"] .backdrop-blur-3xl::before {
+  backdrop-filter: blur(64px) !important;
+  -webkit-backdrop-filter: blur(64px) !important;
+}
 
 /* ── Accessibility & Reduced Motion Overrides ───── */
 @media (prefers-reduced-motion: reduce) {

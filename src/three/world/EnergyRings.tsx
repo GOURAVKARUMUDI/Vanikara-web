@@ -13,7 +13,7 @@ import { useCygmaWorld } from "@/context/CygmaWorldContext";
  */
 export default function EnergyRings() {
   const { resolvedTheme } = useTheme();
-  const { view } = useCygmaWorld();
+  const { view, sceneReady } = useCygmaWorld();
 
   const ringGroupRef = useRef<THREE.Group>(null);
   const ring1Ref = useRef<THREE.Mesh>(null);
@@ -21,21 +21,55 @@ export default function EnergyRings() {
   const ring3Ref = useRef<THREE.Mesh>(null);
 
   const currentRingScale = useRef(1.0);
+  const revealProgress = useRef(0);
+  const activeTimeRef = useRef(0);
 
-  useFrame((state) => {
-    const time = state.clock.getElapsedTime();
+  useFrame((state, delta) => {
+    if (!sceneReady) {
+      revealProgress.current = 0;
+      if (ringGroupRef.current) {
+        ringGroupRef.current.scale.set(0, 0, 0);
+      }
+      return;
+    }
+
+    if (revealProgress.current < 3.0) {
+      revealProgress.current = Math.min(3.0, revealProgress.current + delta);
+    }
+    const timeSinceReady = revealProgress.current;
+    const revealOpacity = Math.min(1.0, timeSinceReady / 1.5);
+
+    if (timeSinceReady >= 1.5) {
+      activeTimeRef.current += delta;
+    }
+    const activeTime = activeTimeRef.current;
 
     if (ring1Ref.current) {
-      ring1Ref.current.rotation.x = time * 0.22;
-      ring1Ref.current.rotation.y = time * 0.1;
+      ring1Ref.current.rotation.x = activeTime * 0.22;
+      ring1Ref.current.rotation.y = activeTime * 0.1;
+      if (ring1Ref.current.material) {
+        const mat = ring1Ref.current.material as THREE.Material;
+        mat.transparent = true;
+        mat.opacity = revealOpacity;
+      }
     }
     if (ring2Ref.current) {
-      ring2Ref.current.rotation.y = -time * 0.28;
-      ring2Ref.current.rotation.z = time * 0.15;
+      ring2Ref.current.rotation.y = -activeTime * 0.28;
+      ring2Ref.current.rotation.z = activeTime * 0.15;
+      if (ring2Ref.current.material) {
+        const mat = ring2Ref.current.material as THREE.Material;
+        mat.transparent = true;
+        mat.opacity = revealOpacity;
+      }
     }
     if (ring3Ref.current) {
-      ring3Ref.current.rotation.x = -time * 0.14;
-      ring3Ref.current.rotation.z = -time * 0.2;
+      ring3Ref.current.rotation.x = -activeTime * 0.14;
+      ring3Ref.current.rotation.z = -activeTime * 0.2;
+      if (ring3Ref.current.material) {
+        const mat = ring3Ref.current.material as THREE.Material;
+        mat.transparent = true;
+        mat.opacity = revealOpacity;
+      }
     }
 
     // Dynamic ring scaling based on view state
@@ -49,7 +83,7 @@ export default function EnergyRings() {
     currentRingScale.current = THREE.MathUtils.lerp(currentRingScale.current, targetScale, 0.06);
 
     if (ringGroupRef.current) {
-      const rs = currentRingScale.current;
+      const rs = currentRingScale.current * revealOpacity;
       ringGroupRef.current.scale.set(rs, rs, rs);
     }
   });
@@ -71,6 +105,8 @@ export default function EnergyRings() {
           chromaticAberration={0.1}
           ior={1.48}
           color={ring1Color}
+          transparent
+          opacity={0}
         />
       </mesh>
 
@@ -84,6 +120,8 @@ export default function EnergyRings() {
           chromaticAberration={0.1}
           ior={1.48}
           color={ring2Color}
+          transparent
+          opacity={0}
         />
       </mesh>
 
@@ -97,6 +135,8 @@ export default function EnergyRings() {
           chromaticAberration={0.1}
           ior={1.48}
           color={ring3Color}
+          transparent
+          opacity={0}
         />
       </mesh>
     </group>

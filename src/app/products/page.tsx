@@ -3,6 +3,7 @@ import PageHero from '@/components/ui/PageHero';
 import FlagshipProduct from '@/sections/products/FlagshipProduct';
 import ProductShowcase from '@/sections/products/ProductShowcase';
 import CTABanner from '@/sections/home/CTABanner';
+import ProductsScene from '@/components/products/ProductsScene';
 
 export const metadata: Metadata = { 
   title: 'Products',
@@ -16,6 +17,7 @@ export const metadata: Metadata = {
 export default function ProductsPage() {
   return (
     <>
+      <ProductsScene />
       <PageHero
         tag="Our Products"
         title={<>Products Designed for <span className="gradient-text">Real Impact</span></>}

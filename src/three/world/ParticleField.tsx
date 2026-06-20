@@ -23,8 +23,11 @@ function createSeededRandom(seed: number) {
 export default function ParticleField({ count = 650 }) {
   const pointsRef = useRef<THREE.Points>(null);
   const { resolvedTheme } = useTheme();
-  const { view } = useCygmaWorld();
+  const { view, sceneReady } = useCygmaWorld();
   const { config } = usePerformance();
+
+  const revealProgress = useRef(0);
+  const activeTimeRef = useRef(0);
 
   // Generate deterministic coordinates
   const [positions, speeds] = useMemo(() => {
@@ -46,14 +49,37 @@ export default function ParticleField({ count = 650 }) {
 
   useFrame((state, delta) => {
     if (!pointsRef.current) return;
-    const time = state.clock.getElapsedTime();
+
+    if (!sceneReady) {
+      revealProgress.current = 0;
+      if (pointsRef.current.material && !Array.isArray(pointsRef.current.material)) {
+        (pointsRef.current.material as THREE.Material).opacity = 0;
+      }
+      return;
+    }
+
+    if (revealProgress.current < 3.0) {
+      revealProgress.current = Math.min(3.0, revealProgress.current + delta);
+    }
+    const timeSinceReady = revealProgress.current;
+    const revealOpacity = Math.min(1.0, timeSinceReady / 1.5);
+
+    if (timeSinceReady >= 1.5) {
+      activeTimeRef.current += delta;
+    }
+    const activeTime = activeTimeRef.current;
 
     // Warp factors: speeds multiply dynamically on success
     const warpMult = view === "success" ? 15.0 : 1.0;
 
-    // Apply constant orbital rotation to the entire particle field (no jitter, matches rings)
-    pointsRef.current.rotation.y = time * 0.04 * warpMult * config.orbitSpeedMult;
-    pointsRef.current.rotation.x = time * 0.012 * warpMult * config.orbitSpeedMult;
+    // Apply constant orbital rotation to the entire particle field
+    pointsRef.current.rotation.y = activeTime * 0.04 * warpMult * config.orbitSpeedMult;
+    pointsRef.current.rotation.x = activeTime * 0.012 * warpMult * config.orbitSpeedMult;
+
+    if (pointsRef.current.material && !Array.isArray(pointsRef.current.material)) {
+      const baseOpacity = isDark ? 0.45 : 0.6;
+      (pointsRef.current.material as THREE.Material).opacity = baseOpacity * revealOpacity;
+    }
   });
 
   const isDark = resolvedTheme === "dark";
@@ -95,7 +121,7 @@ export default function ParticleField({ count = 650 }) {
         size={0.065}
         color={particleColor}
         transparent
-        opacity={isDark ? 0.45 : 0.6}
+        opacity={0}
         sizeAttenuation
         depthWrite={false}
         map={circleTexture || undefined}

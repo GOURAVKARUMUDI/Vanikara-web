@@ -10,14 +10,36 @@ import { useCygmaWorld } from "@/context/CygmaWorldContext";
  * between the various coordinates defined by our route perspectives.
  */
 export default function CameraController() {
-  const { view, scrollOffset } = useCygmaWorld();
+  const { view, scrollOffset, sceneReady } = useCygmaWorld();
   const { camera, size } = useThree();
 
-  const currentPos = useRef(new THREE.Vector3(0, 1.2, 12));
+  const currentPos = useRef(new THREE.Vector3(0, 1.2, 14));
   const currentLookAt = useRef(new THREE.Vector3(0, 0.2, 0));
+  const revealProgress = useRef(0);
 
-  useFrame((state) => {
-    const time = state.clock.getElapsedTime();
+  useFrame((state, delta) => {
+    // 1. Lock camera in starting position until scene is compiled and ready
+    if (!sceneReady) {
+      camera.position.set(0, 1.2, 14);
+      camera.lookAt(0, 0.2, 0);
+      currentPos.current.set(0, 1.2, 14);
+      currentLookAt.current.set(0, 0.2, 0);
+      revealProgress.current = 0;
+      return;
+    }
+
+    // Advance reveal progress (over 3.0 seconds total: 1.5s fade, 1.5s push)
+    if (revealProgress.current < 3.0) {
+      revealProgress.current = Math.min(3.0, revealProgress.current + delta);
+    }
+    const time = revealProgress.current;
+
+    // Coordinated phases:
+    // Phase 1: 0.0s to 1.5s -> Opacity Fade (camera remains static at starting Z=14 position)
+    // Phase 2: 1.5s to 3.0s -> Camera Push (pushes from starting Z=14/Y=1.2 to target coordinates)
+    const pushProgress = Math.min(1.0, Math.max(0.0, (time - 1.5) / 1.5));
+    const idleActive = time >= 3.0;
+
     const pointer = state.pointer; // Mouse position normalized [-1, 1]
     const aspect = size.width / size.height;
 
@@ -88,6 +110,19 @@ export default function CameraController() {
         useMouseParallax = true;
         orbitScaleX = 0.15;
         orbitScaleY = 0.1;
+        break;
+
+      case "products":
+        // Camera orbits to an elevated side angle facing down slightly
+        targetX = -4.8 * aspectModifier;
+        targetY = 2.4;
+        targetZ = 5.2 * aspectModifier;
+        targetLookY = 0.2;
+
+        useOrbitDrift = true;
+        useMouseParallax = true;
+        orbitScaleX = 0.18;
+        orbitScaleY = 0.12;
         break;
 
       case "ai":
@@ -173,25 +208,34 @@ export default function CameraController() {
         break;
     }
 
-    // 2. Add breathing & drift animations
-    if (useOrbitDrift) {
-      const breathing = Math.sin(time * 0.25) * 0.1;
-      targetZ += breathing;
-
-      targetX += Math.sin(time * 0.15) * orbitScaleX;
-      targetY += Math.cos(time * 0.2) * orbitScaleY;
+    // 2. Cinematic push-in scaling: start further back on Z-axis and pull in as reveal progresses
+    if (pushProgress < 1.0) {
+      const startZ = 14 * aspectModifier;
+      const startY = 1.2;
+      targetZ = THREE.MathUtils.lerp(startZ, targetZ, pushProgress);
+      targetY = THREE.MathUtils.lerp(startY, targetY, pushProgress);
     }
 
-    if (useMouseParallax) {
+    // 3. Add slow breathing & drift animations (active only after the push-in is complete)
+    if (useOrbitDrift && idleActive) {
+      const breathing = Math.sin(state.clock.getElapsedTime() * 0.2) * 0.08;
+      targetZ += breathing;
+
+      targetX += Math.sin(state.clock.getElapsedTime() * 0.12) * orbitScaleX;
+      targetY += Math.cos(state.clock.getElapsedTime() * 0.15) * orbitScaleY;
+    }
+
+    if (useMouseParallax && idleActive) {
       targetX += pointer.x * parallaxScaleX;
       targetY += pointer.y * parallaxScaleY;
     }
 
-    // 3. Interpolation speeds: warp pass uses high speeds, others use cinematic ease
-    const lerpSpeed = (view === "success" || view === "dashboard") ? 0.08 : 0.05;
+    // 4. Easing parameters: slow, frame-rate independent exponential damping
+    const speedFactor = (view === "success" || view === "dashboard") ? 5.0 : 2.5;
+    const lerpFactor = 1.0 - Math.exp(-speedFactor * delta);
 
-    currentPos.current.lerp(new THREE.Vector3(targetX, targetY, targetZ), lerpSpeed);
-    currentLookAt.current.lerp(new THREE.Vector3(targetLookX, targetLookY, targetLookZ), lerpSpeed);
+    currentPos.current.lerp(new THREE.Vector3(targetX, targetY, targetZ), lerpFactor);
+    currentLookAt.current.lerp(new THREE.Vector3(targetLookX, targetLookY, targetLookZ), lerpFactor);
 
     camera.position.copy(currentPos.current);
     camera.lookAt(currentLookAt.current);

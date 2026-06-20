@@ -241,15 +241,42 @@ export default function PreferencesModal() {
               {activeTab === "performance" && (
                 <div className="space-y-5">
                   <p className="text-[11px] text-[var(--text-secondary)] leading-relaxed font-semibold">
-                    Optimized high-quality rendering is enabled globally. You can manage motion effects below to suit your accessibility preferences.
+                    Manage graphics rendering presets and motion options below to optimize performance and battery life for your device.
                   </p>
+
+                  {/* Graphics Quality selector */}
+                  <div className="flex flex-col gap-2 p-4 rounded-2xl bg-slate-500/5 border border-[var(--glass-border)]">
+                    <div className="space-y-1 text-xs">
+                      <h4 className="font-bold text-[var(--text-primary)]">Graphics Quality Mode</h4>
+                      <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
+                        Choose standard graphics presets. <strong>Auto</strong> will dynamically scale down details if browser frame rates drop.
+                      </p>
+                    </div>
+
+                    <div className="grid grid-cols-3 sm:grid-cols-6 gap-1.5 mt-2.5">
+                      {(["auto", "ultra", "high", "medium", "low", "battery"] as const).map((prof) => (
+                        <button
+                          key={prof}
+                          type="button"
+                          onClick={() => setProfileOverride(prof)}
+                          className={`py-2 px-1 rounded-xl text-[9px] font-black uppercase tracking-wider transition-all cursor-pointer border ${
+                            profile === prof
+                              ? "bg-[var(--accent-color)] text-white border-[var(--accent-color)] shadow-sm shadow-[var(--accent-color)]/25 scale-[1.02]"
+                              : "bg-slate-500/5 hover:bg-slate-500/10 text-[var(--text-secondary)] hover:text-[var(--text-primary)] border-[var(--glass-border)]"
+                          }`}
+                        >
+                          {prof}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
 
                   {/* Reduce Motion toggle option */}
                   <div className="flex items-start justify-between gap-6 p-4 rounded-2xl bg-slate-500/5 border border-[var(--glass-border)]">
                     <div className="space-y-1 text-xs">
                       <h4 className="font-bold text-[var(--text-primary)]">Reduce Motion</h4>
                       <p className="text-[10px] text-[var(--text-secondary)] leading-relaxed">
-                        Halts camera orbit paths and dynamic particle drift movements for accessibility. Visual shaders and premium materials remain fully active.
+                        Halts camera orbit paths and dynamic particle drift movements for accessibility. Visual shaders and premium materials remain active unless restricted by quality.
                       </p>
                     </div>
                     <button
@@ -284,7 +311,9 @@ export default function PreferencesModal() {
                       </div>
                       <div className="flex justify-between border-b border-white/5 py-1">
                         <span>Engine Configuration</span>
-                        <span className="font-mono text-[var(--text-primary)] uppercase">{reduceMotion ? "High-Quality (Reduced Motion)" : "High-Quality (Optimized)"}</span>
+                        <span className="font-mono text-[var(--text-primary)] uppercase">
+                          {profile === "auto" ? `Auto (${currentProfile})` : currentProfile}
+                        </span>
                       </div>
                       <div className="flex justify-between border-b border-white/5 py-1">
                         <span>Display Pixel Ratio</span>

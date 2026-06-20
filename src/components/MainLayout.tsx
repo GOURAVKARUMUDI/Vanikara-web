@@ -12,6 +12,7 @@ import CustomCursor from "./layout/CustomCursor";
 import SmoothScroll from "./layout/SmoothScroll";
 import ConsentBanner from "./layout/ConsentBanner";
 import PreferencesModal from "./layout/PreferencesModal";
+import { useTheme } from "./layout/ThemeContext";
 
 // Dynamic import for client-only R3F Canvas
 const IntelligenceWorld = dynamic(() => import("@/three/world/IntelligenceWorld"), {
@@ -22,9 +23,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const pathname = usePathname();
   const isAiPage = pathname === "/ai";
   const { view, isTransitioning } = useCygmaWorld();
+  const { resolvedTheme } = useTheme();
   const [showFlash, setShowFlash] = useState(false);
 
-  const mainRoutes = ["/", "/about", "/projects", "/ai", "/login", "/careers", "/contact", "/dashboard", "/admin"];
+  const mainRoutes = ["/", "/about", "/projects", "/products", "/ai", "/login", "/careers", "/contact", "/dashboard", "/admin"];
   const showCanvas = mainRoutes.includes(pathname);
 
   // Disable native automatic scroll restoration to ensure clean starts at the top
@@ -105,7 +107,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.4, ease: "easeInOut" }}
-            className="fixed inset-0 bg-white z-50 pointer-events-none"
+            className={`fixed inset-0 z-50 pointer-events-none ${
+              resolvedTheme === "dark" ? "bg-slate-950" : "bg-white"
+            }`}
           />
         )}
       </AnimatePresence>

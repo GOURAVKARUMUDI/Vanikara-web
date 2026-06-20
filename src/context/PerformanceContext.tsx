@@ -41,11 +41,66 @@ interface PerformanceContextType {
 
 const PerformanceContext = createContext<PerformanceContextType | undefined>(undefined);
 
+const PROFILE_CONFIGS: Record<PerformanceProfile, Omit<PerformanceConfig, "orbitSpeedMult" | "dpr">> = {
+  ultra: {
+    maxParticles: 660,
+    usePostProcessing: true,
+    bloomIntensity: 1.25,
+    bloomMipmapBlur: true,
+    useHeavyTransmission: true,
+    glassObjectsCount: 25,
+    targetFps: 60,
+    neuralNetworkNodeCount: 16,
+  },
+  high: {
+    maxParticles: 400,
+    usePostProcessing: true,
+    bloomIntensity: 1.0,
+    bloomMipmapBlur: true,
+    useHeavyTransmission: true,
+    glassObjectsCount: 15,
+    targetFps: 60,
+    neuralNetworkNodeCount: 12,
+  },
+  medium: {
+    maxParticles: 200,
+    usePostProcessing: true,
+    bloomIntensity: 0.75,
+    bloomMipmapBlur: false,
+    useHeavyTransmission: false,
+    glassObjectsCount: 8,
+    targetFps: 60,
+    neuralNetworkNodeCount: 8,
+  },
+  low: {
+    maxParticles: 80,
+    usePostProcessing: false,
+    bloomIntensity: 0.0,
+    bloomMipmapBlur: false,
+    useHeavyTransmission: false,
+    glassObjectsCount: 4,
+    targetFps: 30,
+    neuralNetworkNodeCount: 6,
+  },
+  battery: {
+    maxParticles: 20,
+    usePostProcessing: false,
+    bloomIntensity: 0.0,
+    bloomMipmapBlur: false,
+    useHeavyTransmission: false,
+    glassObjectsCount: 2,
+    targetFps: 30,
+    neuralNetworkNodeCount: 4,
+  },
+};
+
 export function PerformanceProvider({ children }: { children: React.ReactNode }) {
   const [manualReduceMotion, setManualReduceMotion] = useState<boolean>(false);
+  const [profileOverride, setProfileOverride] = useState<PerformanceOverride>("auto");
+  const [autoProfile, setAutoProfile] = useState<PerformanceProfile>("high");
   const [fps, setFps] = useState(60);
 
-  // Specifications state for telemetry display (statically populated except for layout factors)
+  // Specifications state for telemetry display
   const [detectedSpecs, setDetectedSpecs] = useState<PerformanceContextType["detectedSpecs"]>({
     cores: 8,
     memory: 8,
@@ -57,13 +112,19 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
 
   const frameTimesRef = useRef<number[]>([]);
   const lastFrameTimeRef = useRef<number>(0);
+  const lowFpsCountRef = useRef<number>(0);
+  const lastTimeRef = useRef<number>(0);
 
-  // Load manual motion setting on mount
+  // Load manual settings on mount
   useEffect(() => {
     if (typeof window !== "undefined") {
-      const stored = localStorage.getItem("vanikara_reduce_motion");
-      if (stored !== null) {
-        setManualReduceMotion(stored === "true");
+      const storedMotion = localStorage.getItem("vanikara_reduce_motion");
+      if (storedMotion !== null) {
+        setManualReduceMotion(storedMotion === "true");
+      }
+      const storedProfile = localStorage.getItem("vanikara_performance_profile");
+      if (storedProfile !== null) {
+        setProfileOverride(storedProfile as PerformanceOverride);
       }
     }
   }, []);
@@ -80,23 +141,33 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
     const dpr = window.devicePixelRatio || 1;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
 
+    // Detect mobile device
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
+
     setDetectedSpecs({
-      cores: 8,
-      memory: 8,
+      cores: navigator.hardwareConcurrency || 8,
+      memory: (navigator as any).deviceMemory || 8,
       dpr,
       prefersReducedMotion,
       connection: "optimized",
       gpu: "Hardware Accelerated",
     });
+
+    if (isMobile) {
+      setAutoProfile("medium");
+    } else {
+      setAutoProfile("high");
+    }
   }, []);
 
-  // Simple FPS counter loop (no benchmarking or dynamic tuning)
+  // Simple FPS counter loop with dynamic tuning
   useEffect(() => {
     if (typeof window === "undefined") return;
 
     let animFrameId: number;
     let isRunning = true;
     lastFrameTimeRef.current = performance.now();
+    lastTimeRef.current = performance.now();
 
     const checkFrame = () => {
       if (!isRunning) return;
@@ -119,6 +190,32 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
       const currentFps = Math.round(1000 / averageDelta);
       setFps(currentFps);
 
+      // Check every 1 second (1000ms) for adaptive profiling if in "auto" mode
+      if (now - lastTimeRef.current >= 1000) {
+        lastTimeRef.current = now;
+
+        if (profileOverride === "auto") {
+          // If FPS is critically low (below 38)
+          if (currentFps < 38) {
+            lowFpsCountRef.current += 1;
+            // Downgrade after 3 seconds of consistently low FPS
+            if (lowFpsCountRef.current >= 3) {
+              lowFpsCountRef.current = 0;
+              setAutoProfile((prev) => {
+                if (prev === "ultra") return "high";
+                if (prev === "high") return "medium";
+                if (prev === "medium") return "low";
+                if (prev === "low") return "battery";
+                return prev;
+              });
+            }
+          } else {
+            // Reset counter if FPS is stable
+            lowFpsCountRef.current = 0;
+          }
+        }
+      }
+
       animFrameId = requestAnimationFrame(checkFrame);
     };
 
@@ -128,42 +225,57 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
       isRunning = false;
       cancelAnimationFrame(animFrameId);
     };
-  }, []);
+  }, [profileOverride]);
 
   const reduceMotion = detectedSpecs.prefersReducedMotion || manualReduceMotion;
 
-  const activeConfig = useMemo<PerformanceConfig>(() => {
-    return {
-      maxParticles: 660, // Reduced by 20% to 660 particles for visual clarity
-      usePostProcessing: true,
-      bloomIntensity: 1.25,
-      bloomMipmapBlur: true,
-      useHeavyTransmission: true,
-      glassObjectsCount: 25,
-      dpr: detectedSpecs.dpr,
-      targetFps: 60,
-      orbitSpeedMult: reduceMotion ? 0.0 : 1.0,
-      neuralNetworkNodeCount: 16,
-    };
-  }, [detectedSpecs.dpr, reduceMotion]);
+  const currentProfile: PerformanceProfile = useMemo(() => {
+    if (reduceMotion) return "battery";
+    if (profileOverride === "auto") return autoProfile;
+    return profileOverride;
+  }, [reduceMotion, profileOverride, autoProfile]);
 
-  // Maintain compatibility with existing code references to profiles
-  const profile: PerformanceOverride = reduceMotion ? "battery" : "ultra";
-  const currentProfile: PerformanceProfile = reduceMotion ? "battery" : "ultra";
-  const setProfileOverride = (prof: PerformanceOverride) => {
-    const shouldReduce = prof === "battery" || prof === "low";
-    setReduceMotion(shouldReduce);
+  const activeConfig = useMemo<PerformanceConfig>(() => {
+    const base = PROFILE_CONFIGS[currentProfile];
+    
+    // Determine target DPR based on profile
+    let targetDpr = base.targetFps === 30 ? 1.0 : detectedSpecs.dpr;
+    if (currentProfile === "ultra") targetDpr = Math.min(2.0, detectedSpecs.dpr);
+    else if (currentProfile === "high") targetDpr = Math.min(1.5, detectedSpecs.dpr);
+    else if (currentProfile === "medium") targetDpr = Math.min(1.2, detectedSpecs.dpr);
+    else targetDpr = 1.0;
+
+    return {
+      maxParticles: base.maxParticles,
+      usePostProcessing: base.usePostProcessing,
+      bloomIntensity: base.bloomIntensity,
+      bloomMipmapBlur: base.bloomMipmapBlur,
+      useHeavyTransmission: base.useHeavyTransmission,
+      glassObjectsCount: base.glassObjectsCount,
+      targetFps: base.targetFps,
+      neuralNetworkNodeCount: base.neuralNetworkNodeCount,
+      dpr: targetDpr,
+      orbitSpeedMult: reduceMotion ? 0.0 : (currentProfile === "low" ? 0.8 : 1.0),
+    };
+  }, [currentProfile, detectedSpecs.dpr, reduceMotion]);
+
+  const handleSetProfileOverride = (prof: PerformanceOverride) => {
+    setProfileOverride(prof);
+    localStorage.setItem("vanikara_performance_profile", prof);
+    if (prof === "battery") {
+      setReduceMotion(true);
+    }
   };
 
   return (
     <PerformanceContext.Provider
       value={{
-        profile,
+        profile: profileOverride,
         currentProfile,
         fps,
         isBenchmarked: true,
         config: activeConfig,
-        setProfileOverride,
+        setProfileOverride: handleSetProfileOverride,
         reduceMotion,
         setReduceMotion,
         detectedSpecs,
@@ -181,3 +293,4 @@ export function usePerformance() {
   }
   return context;
 }
+

@@ -1,5 +1,4 @@
-"use client";
-
+import React, { useRef } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useCygmaWorld } from "@/context/CygmaWorldContext";
@@ -10,8 +9,9 @@ import { useTheme } from "@/components/layout/ThemeContext";
  * between Light and Dark mode presets and contextual route views.
  */
 export default function ThemeLighting() {
-  const { view } = useCygmaWorld();
+  const { view, sceneReady } = useCygmaWorld();
   const { resolvedTheme } = useTheme();
+  const revealProgress = useRef(0);
 
   // Preset configuration parameters for Light vs Dark modes
   const themePresets = {
@@ -37,9 +37,30 @@ export default function ThemeLighting() {
     },
   };
 
-  useFrame((state) => {
+  useFrame((state, delta) => {
     const isDark = resolvedTheme === "dark";
     const activePreset = isDark ? themePresets.dark : themePresets.light;
+
+    // Retrieve light meshes from the R3F scene graph
+    const ambient = state.scene.getObjectByName("ambient-light") as THREE.AmbientLight;
+    const dir = state.scene.getObjectByName("dir-light") as THREE.DirectionalLight;
+    const point = state.scene.getObjectByName("point-light") as THREE.PointLight;
+    const spot = state.scene.getObjectByName("spot-light") as THREE.SpotLight;
+
+    if (!sceneReady) {
+      revealProgress.current = 0;
+      if (ambient) ambient.intensity = 0;
+      if (dir) dir.intensity = 0;
+      if (point) point.intensity = 0;
+      if (spot) spot.intensity = 0;
+      return;
+    }
+
+    if (revealProgress.current < 3.0) {
+      revealProgress.current = Math.min(3.0, revealProgress.current + delta);
+    }
+    const timeSinceReady = revealProgress.current;
+    const revealOpacity = Math.min(1.0, timeSinceReady / 1.5);
 
     // 1. Compute view-based lighting multipliers
     let modifier = 1.0;
@@ -56,24 +77,14 @@ export default function ThemeLighting() {
       modifier = 0.95; // Balanced clinical dashboard light
     }
 
-    const time = state.clock.getElapsedTime();
     const lerpSpeed = 0.055;
-
-    // Wake-up lighting sequence on page load (0 to 1 over first 2.0s)
-    const wakeUp = Math.min(1.0, time / 2.0);
-
-    // Retrieve light meshes from the R3F scene graph
-    const ambient = state.scene.getObjectByName("ambient-light") as THREE.AmbientLight;
-    const dir = state.scene.getObjectByName("dir-light") as THREE.DirectionalLight;
-    const point = state.scene.getObjectByName("point-light") as THREE.PointLight;
-    const spot = state.scene.getObjectByName("spot-light") as THREE.SpotLight;
 
     // Interpolate values
     if (ambient) {
       ambient.color.lerp(activePreset.ambientColor, lerpSpeed);
       ambient.intensity = THREE.MathUtils.lerp(
         ambient.intensity,
-        activePreset.ambientIntensity * modifier * wakeUp,
+        activePreset.ambientIntensity * modifier * revealOpacity,
         lerpSpeed
       );
     }
@@ -82,7 +93,7 @@ export default function ThemeLighting() {
       dir.color.lerp(activePreset.dirColor, lerpSpeed);
       dir.intensity = THREE.MathUtils.lerp(
         dir.intensity,
-        activePreset.dirIntensity * modifier * wakeUp,
+        activePreset.dirIntensity * modifier * revealOpacity,
         lerpSpeed
       );
     }
@@ -91,7 +102,7 @@ export default function ThemeLighting() {
       point.color.lerp(activePreset.fillColor, lerpSpeed);
       point.intensity = THREE.MathUtils.lerp(
         point.intensity,
-        activePreset.fillIntensity * modifier * wakeUp,
+        activePreset.fillIntensity * modifier * revealOpacity,
         lerpSpeed
       );
     }
@@ -100,7 +111,7 @@ export default function ThemeLighting() {
       spot.color.lerp(activePreset.spotColor, lerpSpeed);
       spot.intensity = THREE.MathUtils.lerp(
         spot.intensity,
-        activePreset.spotIntensity * modifier * spotModifier * wakeUp,
+        activePreset.spotIntensity * modifier * spotModifier * revealOpacity,
         lerpSpeed
       );
     }

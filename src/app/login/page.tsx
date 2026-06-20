@@ -145,10 +145,10 @@ export default function LoginPage() {
         <AnimatePresence mode="wait">
           {!isSuccess && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.2, filter: "blur(15px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              exit={{ opacity: 0, scale: 0.2, y: -20, filter: "blur(15px)" }}
-              transition={{ duration: 1.0, delay: 0.55, ease: [0.16, 1, 0.3, 1] }}
+              initial={{ opacity: 0, scale: 0.94, y: 15, filter: "blur(12px)" }}
+              animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 0.94, y: -15, filter: "blur(12px)" }}
+              transition={{ duration: 0.8, delay: 0.15, ease: [0.16, 1, 0.3, 1] }}
               className="w-full max-w-md shrink-0"
             >
               {/* Breathing / Floating Wrapper */}
@@ -440,9 +440,10 @@ export default function LoginPage() {
         <AnimatePresence>
           {isSuccess && (
             <motion.div
-              initial={{ opacity: 0, scale: 0.8, filter: "blur(20px)" }}
-              animate={{ opacity: 1, scale: 1, filter: "blur(0px)" }}
-              transition={{ duration: 1.0, ease: "easeOut" }}
+              initial={{ opacity: 0, scale: 0.95, y: 10, filter: "blur(15px)" }}
+              animate={{ opacity: 1, scale: 1, y: 0, filter: "blur(0px)" }}
+              exit={{ opacity: 0, scale: 0.95, filter: "blur(15px)" }}
+              transition={{ duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
               className="text-center space-y-4 max-w-sm absolute z-30 pointer-events-none"
             >
               <div className="w-14 h-14 rounded-2xl bg-[var(--accent-color)]/10 border border-[var(--glass-border)] flex items-center justify-center mx-auto text-xl text-[var(--accent-color)] animate-pulse">
@@ -459,7 +460,9 @@ export default function LoginPage() {
         </AnimatePresence>
 
         {/* Sidebar Announcement Panel */}
-        <AuthSidebar />
+        <AnimatePresence>
+          {!isSuccess && <AuthSidebar />}
+        </AnimatePresence>
 
       </div>
     </div>

@@ -7,6 +7,7 @@ export type CygmaView =
   | "hero" 
   | "about" 
   | "projects" 
+  | "products"
   | "ai" 
   | "login" 
   | "careers" 
@@ -26,6 +27,8 @@ interface CygmaWorldContextType {
   setNavbarVisible: (visible: boolean) => void;
   isTransitioning: boolean;
   setIsTransitioning: (transitioning: boolean) => void;
+  sceneReady: boolean;
+  setSceneReady: (ready: boolean) => void;
 }
 
 const CygmaWorldContext = createContext<CygmaWorldContextType | undefined>(undefined);
@@ -36,6 +39,7 @@ export function CygmaWorldProvider({ children }: { children: React.ReactNode }) 
   const getInitialView = (path: string): CygmaView => {
     if (path === "/about") return "about";
     if (path === "/projects") return "projects";
+    if (path === "/products") return "products";
     if (path === "/ai") return "ai";
     if (path === "/login") return "login";
     if (path === "/careers") return "careers";
@@ -54,6 +58,7 @@ export function CygmaWorldProvider({ children }: { children: React.ReactNode }) 
   const [scrollOffset, setScrollOffset] = useState(0);
   const [navbarVisible, setNavbarVisible] = useState(() => getInitialNavbarVisible(pathname));
   const [isTransitioning, setIsTransitioning] = useState(false);
+  const [sceneReady, setSceneReady] = useState(false);
 
   const [prevPathname, setPrevPathname] = useState(pathname);
 
@@ -71,6 +76,9 @@ export function CygmaWorldProvider({ children }: { children: React.ReactNode }) 
       setNavbarVisible(true);
     } else if (pathname === "/projects") {
       setView("projects");
+      setNavbarVisible(true);
+    } else if (pathname === "/products") {
+      setView("products");
       setNavbarVisible(true);
     } else if (pathname === "/ai") {
       setView("ai");
@@ -106,6 +114,8 @@ export function CygmaWorldProvider({ children }: { children: React.ReactNode }) 
         setNavbarVisible,
         isTransitioning,
         setIsTransitioning,
+        sceneReady,
+        setSceneReady,
       }}
     >
       {children}

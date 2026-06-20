@@ -32,6 +32,12 @@ export default function Navbar() {
   const { theme, setTheme } = useTheme();
   const { navbarVisible, setNavbarVisible, setView, setIsTransitioning } = useCygmaWorld();
   
+  const [mounted, setMounted] = useState(false);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
+
   useAuthRedirect();
 
   const [isHeroVisible, setIsHeroVisible] = useState(true);
@@ -85,6 +91,7 @@ export default function Navbar() {
     if (href === "/") targetView = "hero";
     else if (href === "/about") targetView = "about";
     else if (href === "/projects") targetView = "projects";
+    else if (href === "/products") targetView = "products";
     else if (href === "/ai") targetView = "ai";
     else if (href === "/careers") targetView = "careers";
     else if (href === "/contact") targetView = "contact";
@@ -150,6 +157,9 @@ export default function Navbar() {
   };
 
   const renderThemeIcon = () => {
+    if (!mounted) {
+      return <Sparkles className="w-4 h-4 text-blue-500" />;
+    }
     switch (theme) {
       case "light":
         return <Sun className="w-4 h-4 text-amber-500" />;
@@ -289,8 +299,8 @@ export default function Navbar() {
             <button
               onClick={cycleTheme}
               className="p-2 rounded-full hover:bg-slate-500/10 border border-transparent hover:border-white/10 transition-all duration-300 cursor-pointer active:scale-95 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-color)]"
-              title={`Theme: ${theme.toUpperCase()}`}
-              aria-label={`Cycle color theme, current theme is ${theme}`}
+              title={mounted ? `Theme: ${theme.toUpperCase()}` : "Theme: AUTO"}
+              aria-label={mounted ? `Cycle color theme, current theme is ${theme}` : "Cycle color theme, current theme is auto"}
             >
               {renderThemeIcon()}
             </button>
@@ -333,7 +343,7 @@ export default function Navbar() {
             <button
               onClick={cycleTheme}
               className="p-1.5 rounded-full hover:bg-slate-500/10 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-color)]"
-              aria-label={`Cycle color theme, current is ${theme}`}
+              aria-label={mounted ? `Cycle color theme, current is ${theme}` : "Cycle color theme, current is auto"}
             >
               {renderThemeIcon()}
             </button>
