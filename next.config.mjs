@@ -17,11 +17,11 @@ const nextConfig = {
             key: 'Content-Security-Policy',
             value: `
               default-src 'self';
-              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co;
+              script-src 'self' 'unsafe-inline' 'unsafe-eval' https://*.supabase.co https://va.vercel-scripts.com;
               style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
               img-src 'self' data: https:;
               font-src 'self' https://fonts.gstatic.com;
-              connect-src 'self' https://*.supabase.co https://*.razorpay.com;
+              connect-src 'self' https://*.supabase.co https://*.razorpay.com https://vitals.vercel-insights.com;
               object-src 'none';
               base-uri 'self';
               form-action 'self';
