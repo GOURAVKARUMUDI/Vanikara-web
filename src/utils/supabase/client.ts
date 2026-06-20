@@ -6,20 +6,19 @@ const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 let clientInstance: any = null;
 
 export const createClient = () => {
+  const url = supabaseUrl || "https://placeholder-url.supabase.co";
+  const key = supabaseKey || "placeholder-anon-key";
+
   if (!supabaseUrl || !supabaseKey) {
-    console.error('Supabase URL or Anon Key is missing!');
+    console.warn('Supabase URL or Anon Key is missing! Using placeholder values for build compilation.');
   }
+
   if (typeof window === 'undefined') {
-    return createBrowserClient(
-      supabaseUrl!,
-      supabaseKey!
-    );
+    return createBrowserClient(url, key);
   }
   if (!clientInstance) {
-    clientInstance = createBrowserClient(
-      supabaseUrl!,
-      supabaseKey!
-    );
+    clientInstance = createBrowserClient(url, key);
   }
   return clientInstance;
 };
+

@@ -1,14 +1,10 @@
 import { createClient } from "@supabase/supabase-js";
 
-const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
-const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL || "https://placeholder-url.supabase.co";
+const supabaseServiceKey = process.env.SUPABASE_SERVICE_ROLE_KEY || "placeholder-service-role-key";
 
-if (!supabaseUrl) {
-    throw new Error("NEXT_PUBLIC_SUPABASE_URL is missing");
-}
-
-if (!supabaseServiceKey) {
-    throw new Error("SUPABASE_SERVICE_ROLE_KEY is missing");
+if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    console.warn("Supabase Service URL or Role Key is missing! Using placeholder values for build compilation.");
 }
 
 export const supabaseService = createClient(

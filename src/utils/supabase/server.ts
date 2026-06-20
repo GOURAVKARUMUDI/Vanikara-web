@@ -5,9 +5,16 @@ const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
 const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
 
 export const createClient = (cookieStore: any) => {
+  const url = supabaseUrl || "https://placeholder-url.supabase.co";
+  const key = supabaseKey || "placeholder-anon-key";
+
+  if (!supabaseUrl || !supabaseKey) {
+    console.warn('Supabase URL or Anon Key is missing! Using placeholder values for build compilation.');
+  }
+
   return createServerClient(
-    supabaseUrl!,
-    supabaseKey!,
+    url,
+    key,
     {
       cookies: {
         getAll() {
@@ -23,3 +30,4 @@ export const createClient = (cookieStore: any) => {
     },
   );
 };
+
