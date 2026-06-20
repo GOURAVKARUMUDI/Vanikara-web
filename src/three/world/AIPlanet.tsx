@@ -42,6 +42,28 @@ export default function AIPlanet() {
   const currentGlowOpacity = useRef(1.0);
   const currentSecondaryGlowOpacity = useRef(1.0);
   const revealProgress = useRef(0);
+  const interactedRef = useRef(false);
+
+  React.useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth >= 768) {
+      interactedRef.current = true;
+      return;
+    }
+    const handleInteraction = () => {
+      interactedRef.current = true;
+      window.removeEventListener("pointerdown", handleInteraction);
+      window.removeEventListener("scroll", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+    };
+    window.addEventListener("pointerdown", handleInteraction, { passive: true });
+    window.addEventListener("scroll", handleInteraction, { passive: true });
+    window.addEventListener("touchstart", handleInteraction, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", handleInteraction);
+      window.removeEventListener("scroll", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+    };
+  }, []);
 
   // Generate a cluster of neural particles inside the glass core
   const innerParticleCount = 80;
@@ -166,7 +188,7 @@ export default function AIPlanet() {
       if (!innerParticlesRef.current.userData.time) {
         innerParticlesRef.current.userData.time = 0;
       }
-      if (timeSinceReady >= 1.5) {
+      if (timeSinceReady >= 1.5 && interactedRef.current) {
         innerParticlesRef.current.userData.time += delta;
       }
       const activePTime = innerParticlesRef.current.userData.time;

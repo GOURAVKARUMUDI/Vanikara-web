@@ -2,12 +2,14 @@
 
 import { useState, useEffect, useRef } from "react";
 import { createClient } from "@/utils/supabase/client";
-import Sidebar from "@/components/ai/Sidebar";
-import ChatArea from "@/components/ai/ChatArea";
-import ContextPanel from "@/components/ai/ContextPanel";
 import Button from "@/components/ui/Button";
 import { ShieldCheck, LogIn, Compass, Terminal, ShieldAlert } from "lucide-react";
-import AIScene from "@/components/ai/AIScene";
+import dynamic from "next/dynamic";
+
+const Sidebar = dynamic(() => import("@/components/ai/Sidebar"), { ssr: false });
+const ChatArea = dynamic(() => import("@/components/ai/ChatArea"), { ssr: false });
+const ContextPanel = dynamic(() => import("@/components/ai/ContextPanel"), { ssr: false });
+const AIScene = dynamic(() => import("@/components/ai/AIScene"), { ssr: false });
 
 interface Message {
   id: string;

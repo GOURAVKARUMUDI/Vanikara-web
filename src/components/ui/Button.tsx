@@ -5,7 +5,7 @@ import React, { useState, MouseEvent } from "react";
 import { motion } from "framer-motion";
 import Magnetic from "./Magnetic";
 
-const MotionLink = motion(Link);
+const MotionLink = motion.create(Link);
 
 interface ButtonProps extends React.ComponentPropsWithoutRef<"button"> {
   href?: string;

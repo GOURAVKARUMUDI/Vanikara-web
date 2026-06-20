@@ -10,11 +10,13 @@ import { useCygmaWorld } from "@/context/CygmaWorldContext";
  * between the various coordinates defined by our route perspectives.
  */
 export default function CameraController() {
-  const { view, scrollOffset, sceneReady } = useCygmaWorld();
+  const { view, sceneReady } = useCygmaWorld();
   const { camera, size } = useThree();
 
   const currentPos = useRef(new THREE.Vector3(0, 1.2, 14));
   const currentLookAt = useRef(new THREE.Vector3(0, 0.2, 0));
+  const targetPosRef = useRef(new THREE.Vector3());
+  const targetLookRef = useRef(new THREE.Vector3());
   const revealProgress = useRef(0);
 
   useFrame((state, delta) => {
@@ -42,6 +44,7 @@ export default function CameraController() {
 
     const pointer = state.pointer; // Mouse position normalized [-1, 1]
     const aspect = size.width / size.height;
+    const scrollOffset = typeof window !== "undefined" ? window.scrollY : 0;
 
     // Responsive aspect multiplier
     const aspectModifier = aspect < 1 ? 1.0 + (1.0 - aspect) * 0.8 : 1.0;
@@ -234,8 +237,11 @@ export default function CameraController() {
     const speedFactor = (view === "success" || view === "dashboard") ? 5.0 : 2.5;
     const lerpFactor = 1.0 - Math.exp(-speedFactor * delta);
 
-    currentPos.current.lerp(new THREE.Vector3(targetX, targetY, targetZ), lerpFactor);
-    currentLookAt.current.lerp(new THREE.Vector3(targetLookX, targetLookY, targetLookZ), lerpFactor);
+    targetPosRef.current.set(targetX, targetY, targetZ);
+    targetLookRef.current.set(targetLookX, targetLookY, targetLookZ);
+
+    currentPos.current.lerp(targetPosRef.current, lerpFactor);
+    currentLookAt.current.lerp(targetLookRef.current, lerpFactor);
 
     camera.position.copy(currentPos.current);
     camera.lookAt(currentLookAt.current);

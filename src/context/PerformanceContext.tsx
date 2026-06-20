@@ -1,6 +1,6 @@
 "use client";
 
-import React, { createContext, useContext, useState, useEffect, useRef, useMemo } from "react";
+import React, { createContext, useContext, useState, useEffect, useRef, useMemo, useCallback } from "react";
 
 export type PerformanceProfile = "ultra" | "high" | "medium" | "low" | "battery";
 export type PerformanceOverride = "auto" | PerformanceProfile;
@@ -21,7 +21,6 @@ export interface PerformanceConfig {
 interface PerformanceContextType {
   profile: PerformanceOverride;
   currentProfile: PerformanceProfile;
-  fps: number;
   isBenchmarked: boolean;
   config: PerformanceConfig;
   setProfileOverride: (prof: PerformanceOverride) => void;
@@ -40,6 +39,7 @@ interface PerformanceContextType {
 }
 
 const PerformanceContext = createContext<PerformanceContextType | undefined>(undefined);
+const PerformanceFpsContext = createContext<number | undefined>(undefined);
 
 const PROFILE_CONFIGS: Record<PerformanceProfile, Omit<PerformanceConfig, "orbitSpeedMult" | "dpr">> = {
   ultra: {
@@ -131,10 +131,10 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
     }
   }, []);
 
-  const setReduceMotion = (val: boolean) => {
+  const setReduceMotion = useCallback((val: boolean) => {
     setManualReduceMotion(val);
     localStorage.setItem("vanikara_reduce_motion", String(val));
-  };
+  }, []);
 
   // Safe Browser Cues detection (DPR and Motion only)
   useEffect(() => {
@@ -142,9 +142,6 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
 
     const dpr = window.devicePixelRatio || 1;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-
-    // Detect mobile device
-    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 768;
 
     setDetectedSpecs({
       cores: navigator.hardwareConcurrency || 8,
@@ -160,7 +157,7 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
     setAutoProfile("high");
   }, []);
 
-  // Simple FPS counter loop with dynamic tuning
+  // Simple FPS counter loop with dynamic tuning (throttled updates to state)
   useEffect(() => {
     if (typeof window === "undefined") return;
 
@@ -192,11 +189,13 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
 
       const averageDelta = frameTimesRef.current.reduce((a, b) => a + b, 0) / frameTimesRef.current.length;
       const currentFps = Math.round(1000 / averageDelta);
-      setFps(currentFps);
 
       // Check every 1 second (1000ms) for adaptive profiling if in "auto" mode
       if (now - lastTimeRef.current >= 1000) {
         lastTimeRef.current = now;
+        
+        // Update React state at most once per second to prevent 60 FPS re-render storm
+        setFps(currentFps);
 
         if (profileOverride === "auto") {
           // Warm-up phase: Wait 6 seconds before running telemetry profiling adjustments
@@ -283,29 +282,30 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
     };
   }, [currentProfile, detectedSpecs.dpr, reduceMotion]);
 
-  const handleSetProfileOverride = (prof: PerformanceOverride) => {
+  const handleSetProfileOverride = useCallback((prof: PerformanceOverride) => {
     setProfileOverride(prof);
     localStorage.setItem("vanikara_performance_profile", prof);
     if (prof === "battery") {
       setReduceMotion(true);
     }
-  };
+  }, [setReduceMotion]);
+
+  const contextValue = useMemo(() => ({
+    profile: profileOverride,
+    currentProfile,
+    isBenchmarked: true,
+    config: activeConfig,
+    setProfileOverride: handleSetProfileOverride,
+    reduceMotion,
+    setReduceMotion,
+    detectedSpecs,
+  }), [profileOverride, currentProfile, activeConfig, handleSetProfileOverride, reduceMotion, setReduceMotion, detectedSpecs]);
 
   return (
-    <PerformanceContext.Provider
-      value={{
-        profile: profileOverride,
-        currentProfile,
-        fps,
-        isBenchmarked: true,
-        config: activeConfig,
-        setProfileOverride: handleSetProfileOverride,
-        reduceMotion,
-        setReduceMotion,
-        detectedSpecs,
-      }}
-    >
-      {children}
+    <PerformanceContext.Provider value={contextValue}>
+      <PerformanceFpsContext.Provider value={fps}>
+        {children}
+      </PerformanceFpsContext.Provider>
     </PerformanceContext.Provider>
   );
 }
@@ -314,6 +314,14 @@ export function usePerformance() {
   const context = useContext(PerformanceContext);
   if (context === undefined) {
     throw new Error("usePerformance must be used within a PerformanceProvider");
+  }
+  return context;
+}
+
+export function usePerformanceFps() {
+  const context = useContext(PerformanceFpsContext);
+  if (context === undefined) {
+    throw new Error("usePerformanceFps must be used within a PerformanceProvider");
   }
   return context;
 }

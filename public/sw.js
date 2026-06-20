@@ -34,6 +34,16 @@ self.addEventListener('activate', (event) => {
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
+  const url = new URL(event.request.url);
+  if (
+    url.pathname.startsWith('/admin') ||
+    url.pathname.startsWith('/dashboard') ||
+    url.pathname.startsWith('/api/') ||
+    url.pathname.startsWith('/_next/data/')
+  ) {
+    return;
+  }
+
   event.respondWith(
     caches.match(event.request).then((cached) => {
       if (cached) return cached;

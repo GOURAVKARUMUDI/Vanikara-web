@@ -5,6 +5,15 @@ import { logger } from '@/utils/logger';
 
 export default function ClientLogger() {
   useEffect(() => {
+    // Suppress third-party Three.js deprecation warnings (e.g. THREE.Clock instantiated internally by R3F)
+    const originalWarn = console.warn;
+    console.warn = (...args: any[]) => {
+      if (args[0] && typeof args[0] === 'string' && args[0].includes('THREE.Clock: This module has been deprecated')) {
+        return;
+      }
+      originalWarn.apply(console, args);
+    };
+
     logger.lifecycle('Application', 'mount');
 
     const handleWindowError = (event: ErrorEvent) => {
@@ -58,6 +67,7 @@ export default function ClientLogger() {
     }
 
     return () => {
+      console.warn = originalWarn;
       if (typeof window !== "undefined") {
         window.removeEventListener('error', handleWindowError);
         window.removeEventListener('unhandledrejection', handleRejection);

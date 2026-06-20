@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useRef, useState } from "react";
-import { motion, useScroll, useTransform } from "framer-motion";
+import { motion, useScroll } from "framer-motion";
 import { FadeUp } from "@/components/Animate";
 
 interface Milestone {
@@ -67,9 +67,6 @@ export default function InnovationTimeline() {
     offset: ["start end", "end end"]
   });
 
-  // Animate line height based on scroll progress
-  const lineHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
-
   const toggleExpand = (index: number) => {
     setExpandedIndex(expandedIndex === index ? null : index);
   };
@@ -99,8 +96,8 @@ export default function InnovationTimeline() {
           
           {/* Animated fill line */}
           <motion.div 
-            className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-0 w-[2px] bg-gradient-to-b from-[#1E6BD6] via-[#FF7A00] to-[#FFC400]"
-            style={{ height: lineHeight }}
+            className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-0 w-[2px] bg-gradient-to-b from-[#1E6BD6] via-[#FF7A00] to-[#FFC400] origin-top h-full"
+            style={{ scaleY: scrollYProgress }}
           />
 
           <div className="space-y-12">

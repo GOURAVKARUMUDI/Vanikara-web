@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useCygmaWorld } from "@/context/CygmaWorldContext";
@@ -28,6 +28,28 @@ export default function ParticleField({ count = 650 }) {
 
   const revealProgress = useRef(0);
   const activeTimeRef = useRef(0);
+  const interactedRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth >= 768) {
+      interactedRef.current = true;
+      return;
+    }
+    const handleInteraction = () => {
+      interactedRef.current = true;
+      window.removeEventListener("pointerdown", handleInteraction);
+      window.removeEventListener("scroll", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+    };
+    window.addEventListener("pointerdown", handleInteraction, { passive: true });
+    window.addEventListener("scroll", handleInteraction, { passive: true });
+    window.addEventListener("touchstart", handleInteraction, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", handleInteraction);
+      window.removeEventListener("scroll", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+    };
+  }, []);
 
   // Generate deterministic coordinates
   const [positions, speeds] = useMemo(() => {
@@ -64,7 +86,7 @@ export default function ParticleField({ count = 650 }) {
     const timeSinceReady = revealProgress.current;
     const revealOpacity = Math.min(1.0, timeSinceReady / 1.5);
 
-    if (timeSinceReady >= 1.5) {
+    if (timeSinceReady >= 1.5 && interactedRef.current) {
       activeTimeRef.current += delta;
     }
     const activeTime = activeTimeRef.current;
@@ -108,6 +130,14 @@ export default function ParticleField({ count = 650 }) {
     const texture = new THREE.CanvasTexture(canvas);
     return texture;
   }, []);
+
+  useEffect(() => {
+    return () => {
+      if (circleTexture) {
+        circleTexture.dispose();
+      }
+    };
+  }, [circleTexture]);
 
   return (
     <points ref={pointsRef}>

@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname, useRouter } from "next/navigation";
 import { Menu, X, Sun, Moon, Sparkles, User as UserIcon, LogOut } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
@@ -182,7 +183,7 @@ export default function Navbar() {
           pointerEvents: navbarVisible ? "auto" : "none" 
         }}
         transition={{ duration: 0.5, ease: "easeInOut" }}
-        className={`w-full md:w-[72vw] max-w-4xl pointer-events-auto transition-all duration-500 rounded-full border border-white/10 dark:border-white/5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.06)] relative overflow-hidden group/navbar ${
+        className={`w-full md:w-[72vw] max-w-4xl pointer-events-auto transition-[padding,background-color,transform] duration-500 rounded-full border border-white/10 dark:border-white/5 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.06)] relative overflow-hidden group/navbar ${
           isScrolled 
             ? "py-2 px-6 bg-white/70 dark:bg-slate-900/60 scale-95" 
             : "py-3 px-8 bg-white/40 dark:bg-slate-950/20"
@@ -199,12 +200,13 @@ export default function Navbar() {
             onClick={(e) => handleLinkClick(e, "/")}
           >
             <div className="relative overflow-hidden w-8 h-8 rounded-xl flex items-center justify-center bg-white/10 dark:bg-white/5 shadow-sm border border-white/10 dark:border-white/5">
-              <img 
+              <Image 
                 src="/logo.png" 
                 alt="Vanikara Logo" 
                 className="w-6 h-auto group-hover:scale-110 transition-transform duration-300" 
                 width={24}
                 height={24}
+                priority
               />
             </div>
             <span className="font-display font-black text-xs tracking-widest text-[var(--text-primary)]">

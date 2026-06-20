@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 const rateLimitMap = new Map<string, { count: number; lastReset: number }>();
 
-export function proxy(req: NextRequest) {
+export function middleware(req: NextRequest) {
   const forwarded = req.headers.get('x-forwarded-for');
   const ip = forwarded ? forwarded.split(',')[0] : (req as any).ip || '127.0.0.1';
   const now = Date.now();

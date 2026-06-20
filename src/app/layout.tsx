@@ -14,15 +14,17 @@ import { Analytics } from '@vercel/analytics/react';
 const inter = Inter({
   subsets: ['latin'],
   variable: '--font-inter',
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  weight: ['400', '600', '900'],
   display: 'swap',
+  preload: false,
 });
 
 const outfit = Outfit({
   subsets: ['latin'],
   variable: '--font-outfit',
-  weight: ['300', '400', '500', '600', '700', '800', '900'],
+  weight: ['400', '600', '900'],
   display: 'swap',
+  preload: false,
 });
 
 export const metadata: Metadata = {
@@ -68,7 +70,7 @@ export default function RootLayout({
                 "email": "vanikara26@gmail.com",
                 "areaServed": "IN",
                 "availableLanguage": "en"
-                  },
+              },
               "sameAs": [
                 "https://github.com/GOURAVKARUMUDI/Vanikara-web"
               ]
@@ -76,7 +78,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className={`${inter.variable} ${outfit.variable} antialiased`}>
+      <body className={`${inter.variable} ${outfit.variable} antialiased relative`}>
         <ThemeProvider>
           <CygmaWorldProvider>
             <ConsentProvider>
@@ -86,8 +88,12 @@ export default function RootLayout({
                 <MainLayout>
                   {children}
                 </MainLayout>
-                <SpeedInsights />
-                <Analytics />
+                {process.env.VERCEL && (
+                  <>
+                    <SpeedInsights />
+                    <Analytics />
+                  </>
+                )}
               </PerformanceProvider>
             </ConsentProvider>
           </CygmaWorldProvider>
@@ -96,5 +102,3 @@ export default function RootLayout({
     </html>
   );
 }
-
-

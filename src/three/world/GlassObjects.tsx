@@ -25,11 +25,14 @@ export default function GlassObjects() {
   const { view, sceneReady } = useCygmaWorld();
   const { resolvedTheme } = useTheme();
   const { config } = usePerformance();
-  const fragmentRefs = useRef<THREE.Group[]>([]);
+  const instancedMeshRef = useRef<THREE.InstancedMesh>(null);
   const currentDistanceMult = useRef(1.0);
   
   const revealProgress = useRef(0);
   const activeTimeRef = useRef(0);
+
+  // Temporary Object3D for instanced transforms calculation
+  const tempObject = useMemo(() => new THREE.Object3D(), []);
 
   // Generate floating crystal polyhedrons based on performance profile
   const fragments = useMemo(() => {
@@ -60,14 +63,22 @@ export default function GlassObjects() {
   }, [config.glassObjectsCount]);
 
   useFrame((state, delta) => {
+    const instancedMesh = instancedMeshRef.current;
+    if (!instancedMesh) return;
+
     if (!sceneReady) {
       revealProgress.current = 0;
-      fragments.forEach((frag, idx) => {
-        const group = fragmentRefs.current[idx];
-        if (group) {
-          group.scale.set(0, 0, 0);
-        }
-      });
+      // Set all instance matrices scale to 0
+      for (let i = 0; i < fragments.length; i++) {
+        tempObject.position.set(0, 0, 0);
+        tempObject.scale.set(0, 0, 0);
+        tempObject.updateMatrix();
+        instancedMesh.setMatrixAt(i, tempObject.matrix);
+      }
+      instancedMesh.instanceMatrix.needsUpdate = true;
+      if (instancedMesh.material && !Array.isArray(instancedMesh.material)) {
+        (instancedMesh.material as THREE.Material).opacity = 0;
+      }
       return;
     }
 
@@ -89,87 +100,78 @@ export default function GlassObjects() {
     currentDistanceMult.current = THREE.MathUtils.lerp(currentDistanceMult.current, targetDistanceMult, 0.06);
 
     fragments.forEach((frag, idx) => {
-      const group = fragmentRefs.current[idx];
-      if (group) {
-        // Orbit speed multiplier during success passes, supporting prefers-reduced-motion
-        const orbitSpeed = frag.orbitSpeed * 10 * config.orbitSpeedMult;
-        const speedMult = view === "success" ? 6.0 : 1.0;
-        const angle = activeTime * orbitSpeed * speedMult + frag.phase;
-        const radius = Math.sqrt(frag.pos.x * frag.pos.x + frag.pos.z * frag.pos.z) * currentDistanceMult.current;
+      // Orbit speed multiplier during success passes, supporting prefers-reduced-motion
+      const orbitSpeed = frag.orbitSpeed * 10 * config.orbitSpeedMult;
+      const speedMult = view === "success" ? 6.0 : 1.0;
+      const angle = activeTime * orbitSpeed * speedMult + frag.phase;
+      const radius = Math.sqrt(frag.pos.x * frag.pos.x + frag.pos.z * frag.pos.z) * currentDistanceMult.current;
 
-        // Perfect horizontal planar orbit around the center (no vertical jitter/bobbing)
-        group.position.x = Math.cos(angle) * radius;
-        group.position.z = Math.sin(angle) * radius;
-        group.position.y = frag.pos.y;
+      let posX = Math.cos(angle) * radius;
+      let posZ = Math.sin(angle) * radius;
+      const posY = frag.pos.y;
 
-        // Scale by reveal progress
-        group.scale.set(revealOpacity, revealOpacity, revealOpacity);
-
-        // Self rotation of the group
-        group.rotation.x = activeTime * frag.rotSpeed.x * 0.12 * config.orbitSpeedMult;
-        group.rotation.y = activeTime * frag.rotSpeed.y * 0.12 * config.orbitSpeedMult;
-        group.rotation.z = activeTime * frag.rotSpeed.z * 0.12 * config.orbitSpeedMult;
-
-        if (view === "success") {
-          // Centrifugal displacement: push fragments outward to clear camera view
-          group.position.x *= 1.15;
-          group.position.z *= 1.15;
-        }
-
-        // Set opacity of mesh material
-        group.traverse((child) => {
-          if (child instanceof THREE.Mesh && child.material) {
-            const mat = child.material as THREE.Material;
-            mat.transparent = true;
-            mat.opacity = revealOpacity;
-          }
-        });
+      if (view === "success") {
+        // Centrifugal displacement: push fragments outward to clear camera view
+        posX *= 1.15;
+        posZ *= 1.15;
       }
+
+      tempObject.position.set(posX, posY, posZ);
+      
+      const sVal = frag.size * revealOpacity;
+      tempObject.scale.set(sVal, sVal, sVal);
+
+      // Self rotation
+      tempObject.rotation.set(
+        activeTime * frag.rotSpeed.x * 0.12 * config.orbitSpeedMult,
+        activeTime * frag.rotSpeed.y * 0.12 * config.orbitSpeedMult,
+        activeTime * frag.rotSpeed.z * 0.12 * config.orbitSpeedMult
+      );
+
+      tempObject.updateMatrix();
+      instancedMesh.setMatrixAt(idx, tempObject.matrix);
     });
+
+    instancedMesh.instanceMatrix.needsUpdate = true;
+
+    // Set opacity of mesh material
+    if (instancedMesh.material && !Array.isArray(instancedMesh.material)) {
+      const mat = instancedMesh.material as THREE.Material;
+      mat.transparent = true;
+      mat.opacity = revealOpacity;
+    }
   });
 
   const isDark = resolvedTheme === "dark";
   const fragColor = isDark ? "#93c5fd" : "#e0f2fe";
 
   return (
-    <>
-      {fragments.map((frag, idx) => (
-        <group
-          key={frag.id}
-          ref={(el) => {
-            if (el) fragmentRefs.current[idx] = el;
-          }}
-          position={frag.pos}
-        >
-          <mesh>
-            <dodecahedronGeometry args={[frag.size]} />
-            {config.useHeavyTransmission ? (
-              <MeshTransmissionMaterial
-                transmission={0.94}
-                roughness={0.06}
-                thickness={0.35}
-                chromaticAberration={0.18}
-                ior={1.5}
-                color={fragColor}
-                backside={true}
-                transparent
-                opacity={0}
-              />
-            ) : (
-              <meshPhysicalMaterial
-                transmission={0.85}
-                roughness={0.1}
-                thickness={0.35}
-                ior={1.4}
-                color={fragColor}
-                transparent
-                opacity={0}
-                depthWrite={false}
-              />
-            )}
-          </mesh>
-        </group>
-      ))}
-    </>
+    <instancedMesh ref={instancedMeshRef} args={[null as any, null as any, fragments.length]}>
+      <dodecahedronGeometry args={[1]} />
+      {config.useHeavyTransmission ? (
+        <MeshTransmissionMaterial
+          transmission={0.94}
+          roughness={0.06}
+          thickness={0.35}
+          chromaticAberration={0.18}
+          ior={1.5}
+          color={fragColor}
+          backside={true}
+          transparent
+          opacity={0}
+        />
+      ) : (
+        <meshPhysicalMaterial
+          transmission={0.85}
+          roughness={0.1}
+          thickness={0.35}
+          ior={1.4}
+          color={fragColor}
+          transparent
+          opacity={0}
+          depthWrite={false}
+        />
+      )}
+    </instancedMesh>
   );
 }

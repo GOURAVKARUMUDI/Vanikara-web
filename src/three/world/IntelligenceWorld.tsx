@@ -1,23 +1,27 @@
 "use client";
 
-import React, { useEffect, useRef } from "react";
+import React, { useEffect, useRef, Suspense, lazy } from "react";
 import { Canvas, useThree, useFrame } from "@react-three/fiber";
 import * as THREE from "three";
-import { EffectComposer, Bloom } from "@react-three/postprocessing";
 import { useCygmaWorld } from "@/context/CygmaWorldContext";
 import { useTheme } from "@/components/layout/ThemeContext";
 import { usePerformance } from "@/context/PerformanceContext";
 
-// Child rigs & components
+// Lazy-loaded post-processing effects
+const PostProcessingEffects = lazy(() => import("./PostProcessingEffects"));
+
+// Child rigs & components (Static for fast camera/lighting setup)
 import CameraController from "./CameraController";
 import FogController from "./Fog";
 import Lighting from "./Lighting";
 import ThemeLighting from "./ThemeLighting";
-import ParticleField from "./ParticleField";
-import NeuralNetwork from "./NeuralNetwork";
-import EnergyRings from "./EnergyRings";
-import GlassObjects from "./GlassObjects";
-import AIPlanet from "./AIPlanet";
+
+// Lazy-loaded massive procedural geometries to unblock main thread
+const ParticleField = lazy(() => import("./ParticleField"));
+const NeuralNetwork = lazy(() => import("./NeuralNetwork"));
+const EnergyRings = lazy(() => import("./EnergyRings"));
+const GlassObjects = lazy(() => import("./GlassObjects"));
+const AIPlanet = lazy(() => import("./AIPlanet"));
 
 /**
  * SceneInitializer: Compiles WebGL programs/shaders for all objects
@@ -55,6 +59,30 @@ export default function IntelligenceWorld() {
   const { resolvedTheme } = useTheme();
   const { config } = usePerformance();
 
+  const [isMobile, setIsMobile] = React.useState(false);
+  const [initStage, setInitStage] = React.useState(0);
+
+  React.useEffect(() => {
+    const mobile = window.innerWidth < 768;
+    setIsMobile(mobile);
+    if (!mobile) {
+      setInitStage(6);
+      return;
+    }
+
+    // Sequence stages on mobile to remove CPU instantiation spikes
+    let current = 0;
+    const interval = setInterval(() => {
+      current++;
+      setInitStage(current);
+      if (current >= 6) {
+        clearInterval(interval);
+      }
+    }, 80);
+
+    return () => clearInterval(interval);
+  }, []);
+
   const initialFogColor = resolvedTheme === "dark" ? "#020617" : "#c8d7e6";
   const bloomIntensity = view === "success" ? 5.5 : resolvedTheme === "dark" ? 1.25 : 0.65;
 
@@ -70,46 +98,53 @@ export default function IntelligenceWorld() {
         }}
         dpr={config.dpr}
       >
-        {/* Force early shader compilation and scene ready synchronizations */}
-        <SceneInitializer />
-
         <fog attach="fog" args={[initialFogColor, 4, 11]} />
 
         {/* Global Camera interpolation */}
         <CameraController />
 
         {/* Fog preset interpolation */}
-        <FogController />
+        {initStage >= 6 && <FogController />}
 
         {/* Dynamic Light coordinates & materials rigs */}
-        <Lighting />
-        <ThemeLighting />
+        {initStage >= 1 && (
+          <>
+            <Lighting />
+            <ThemeLighting />
+          </>
+        )}
 
-        {/* Neural Network Segments Grid */}
-        <NeuralNetwork key={`neural-net-${config.neuralNetworkNodeCount}`} nodeCount={config.neuralNetworkNodeCount} />
+        {/* Wrap massive components and initializer in Suspense so gl.compile waits for chunks */}
+        <Suspense fallback={null}>
+          {initStage >= 6 && <SceneInitializer />}
 
-        {/* 600+ Space dust energy particles */}
-        <ParticleField key={`particles-${config.maxParticles}`} count={config.maxParticles} />
+          {/* Neural Network Segments Grid */}
+          {initStage >= 3 && (
+            <NeuralNetwork key={`neural-net-${config.neuralNetworkNodeCount}`} nodeCount={config.neuralNetworkNodeCount} />
+          )}
 
-        {/* Orbital rings */}
-        <EnergyRings />
+          {/* 600+ Space dust energy particles */}
+          {initStage >= 4 && (
+            <ParticleField key={`particles-${config.maxParticles}`} count={config.maxParticles} />
+          )}
 
-        {/* Floating crystal dodecahedrons */}
-        <GlassObjects key={`glass-objects-${config.glassObjectsCount}`} />
+          {/* Orbital rings */}
+          {initStage >= 5 && <EnergyRings />}
 
-        {/* Core Glass Sphere */}
-        <AIPlanet />
+          {/* Floating crystal dodecahedrons */}
+          {initStage >= 5 && (
+            <GlassObjects key={`glass-objects-${config.glassObjectsCount}`} />
+          )}
 
-        {/* Bloom post-processing */}
-        {config.usePostProcessing && (
-          <EffectComposer>
-            <Bloom
-              intensity={bloomIntensity * config.bloomIntensity}
-              luminanceThreshold={0.15}
-              luminanceSmoothing={0.75}
-              mipmapBlur={config.bloomMipmapBlur}
-            />
-          </EffectComposer>
+          {/* Core Glass Sphere */}
+          {initStage >= 2 && <AIPlanet />}
+        </Suspense>
+
+        {/* Bloom post-processing - Defer until sceneReady to keep postprocessing out of critical FCP */}
+        {config.usePostProcessing && sceneReady && initStage >= 6 && (
+          <Suspense fallback={null}>
+            <PostProcessingEffects bloomIntensity={bloomIntensity} config={config} />
+          </Suspense>
         )}
       </Canvas>
 

@@ -2,4 +2,4 @@
 User-agent: *
 Allow: /
 
-Sitemap: https://vanikara-web.vercel.app/sitemap.xml
+Sitemap: https://vanikara.com/sitemap.xml

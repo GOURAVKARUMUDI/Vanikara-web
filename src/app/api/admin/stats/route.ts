@@ -17,51 +17,52 @@ export async function GET() {
       return NextResponse.json(apiResponse(false, null, "Unauthorized"), { status: 401 });
     }
 
-    // 1. Total Leads
-    const { count: totalLeads } = await supabaseService
-      .from("leads")
-      .select("*", { count: "exact", head: true });
+    // Execute all database queries concurrently
+    const [
+      leadsCountResult,
+      convertedLeadsResult,
+      clientsCountResult,
+      paymentsResult,
+      leadsHistoryResult,
+      statusCountsResult
+    ] = await Promise.all([
+      supabaseService.from("leads").select("*", { count: "exact", head: true }),
+      supabaseService.from("leads").select("*", { count: "exact", head: true }).eq("status", "converted"),
+      supabaseService.from("clients").select("*", { count: "exact", head: true }),
+      supabaseService.from("payments").select("amount").eq("status", "success"),
+      supabaseService.from("leads").select("created_at").order("created_at", { ascending: true }),
+      supabaseService.from("leads").select("status")
+    ]);
 
-    // 2. Converted Leads
-    const { count: convertedLeads } = await supabaseService
-      .from("leads")
-      .select("*", { count: "exact", head: true })
-      .eq("status", "converted");
+    // Check for errors
+    if (leadsCountResult.error) throw leadsCountResult.error;
+    if (convertedLeadsResult.error) throw convertedLeadsResult.error;
+    if (clientsCountResult.error) throw clientsCountResult.error;
+    if (paymentsResult.error) throw paymentsResult.error;
+    if (leadsHistoryResult.error) throw leadsHistoryResult.error;
+    if (statusCountsResult.error) throw statusCountsResult.error;
 
-    // 3. Total Clients
-    const { count: totalClients } = await supabaseService
-      .from("clients")
-      .select("*", { count: "exact", head: true });
+    const totalLeads = leadsCountResult.count || 0;
+    const convertedLeads = convertedLeadsResult.count || 0;
+    const totalClients = clientsCountResult.count || 0;
+    const payments = paymentsResult.data || [];
+    const leadsHistory = leadsHistoryResult.data || [];
+    const statusCounts = statusCountsResult.data || [];
 
-    // 4. Total Revenue
-    const { data: payments } = await supabaseService
-      .from("payments")
-      .select("amount")
-      .eq("status", "success");
-
-    const totalRevenue = payments?.reduce((acc: any, curr: any) => acc + (Number(curr.amount) || 0), 0) || 0;
+    const totalRevenue = payments.reduce((acc: any, curr: any) => acc + (Number(curr.amount) || 0), 0) || 0;
 
     // 5. Conversion Rate
     const conversionRate = totalLeads ? ((convertedLeads || 0) / totalLeads) * 100 : 0;
 
     // 6. Chart Data: Leads Over Time
-    const { data: leadsHistory } = await supabaseService
-      .from("leads")
-      .select("created_at")
-      .order("created_at", { ascending: true });
-
-    const leadsOverTime = Object.values((leadsHistory || []).reduce((acc: any, lead: any) => {
+    const leadsOverTime = Object.values(leadsHistory.reduce((acc: any, lead: any) => {
       const date = new Date(lead.created_at).toLocaleDateString();
       acc[date] = { date, count: (acc[date]?.count || 0) + 1 };
       return acc;
     }, {}));
 
     // 7. Conversion Data
-    const { data: statusCounts } = await supabaseService
-      .from("leads")
-      .select("status");
-
-    const conversionData = Object.values((statusCounts || []).reduce((acc: any, lead: any) => {
+    const conversionData = Object.values(statusCounts.reduce((acc: any, lead: any) => {
       const name = lead.status.toUpperCase();
       acc[name] = { name, value: (acc[name]?.value || 0) + 1 };
       return acc;

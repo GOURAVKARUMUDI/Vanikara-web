@@ -5,6 +5,19 @@ import * as THREE from "three";
 import { useCygmaWorld } from "@/context/CygmaWorldContext";
 import { useTheme } from "@/components/layout/ThemeContext";
 
+const themePresets = {
+  dark: {
+    color: new THREE.Color("#020617"), // Deep Space Navy/Black
+    near: 4.0,
+    far: 11.0,
+  },
+  light: {
+    color: new THREE.Color("#c8d7e6"), // Deep slate-blue fog matching the bottom light mode gradient
+    near: 3.5,
+    far: 10.0,
+  },
+};
+
 /**
  * FogController: Fades the scene fog colors and limits dynamically
  * depending on route presets and day/night themes.
@@ -12,19 +25,6 @@ import { useTheme } from "@/components/layout/ThemeContext";
 export default function FogController() {
   const { view } = useCygmaWorld();
   const { resolvedTheme } = useTheme();
-
-  const themePresets = {
-    dark: {
-      color: new THREE.Color("#020617"), // Deep Space Navy/Black
-      near: 4.0,
-      far: 11.0,
-    },
-    light: {
-      color: new THREE.Color("#c8d7e6"), // Deep slate-blue fog matching the bottom light mode gradient
-      near: 3.5,
-      far: 10.0,
-    },
-  };
 
   useFrame((state) => {
     const isDark = resolvedTheme === "dark";

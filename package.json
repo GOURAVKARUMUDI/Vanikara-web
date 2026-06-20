@@ -35,6 +35,9 @@
     "stripe": "^20.4.1",
     "three": "^0.184.0"
   },
+  "overrides": {
+    "three": "$three"
+  },
   "devDependencies": {
     "@playwright/test": "^1.61.0",
     "@tailwindcss/postcss": "^4",

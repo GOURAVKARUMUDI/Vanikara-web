@@ -3,9 +3,9 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import dynamic from "next/dynamic";
+import Image from "next/image";
 import { ChevronDown } from "lucide-react";
 import Button from "@/components/ui/Button";
-import { useTheme } from "@/components/layout/ThemeContext";
 
 const easeOutExpo = [0.16, 1, 0.3, 1] as const;
 const easeOutQuart = [0.25, 1, 0.5, 1] as const;
@@ -50,41 +50,65 @@ const STATIC_STARTS = [
   { x: -110, y: 340 }, { x: 170, y: -310 }, { x: -390, y: 230 }, { x: 330, y: -360 }
 ];
 
+const badgeVariants = {
+  hidden: { opacity: 0, y: 10, pointerEvents: "none" as const },
+  visible: { opacity: 1, y: 0, pointerEvents: "auto" as const, transition: { duration: 0.6, delay: 0, ease: easeOutExpo } }
+};
+
+const h1Variants = {
+  hidden: { opacity: 0, y: 25 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.9, delay: 0, ease: easeOutExpo } }
+};
+
+const pVariants = {
+  hidden: { opacity: 0, y: 15 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.8, delay: 0, ease: easeOutQuart } }
+};
+
+const ctaVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.7, delay: 0, ease: easeOutQuart } }
+};
+
 export default function HeroSection() {
-  const [phase, setPhase] = useState<number>(0); // 0: init/dolly (0-2s), 1: converge (2-4.5s), 2: flash (4.5-4.8s), 3: slide-up/reveal (4.8-8s), 4: complete (8s+)
-  const [mounted, setMounted] = useState<boolean>(false);
-  const { resolvedTheme } = useTheme();
+  const [phase, setPhase] = useState<number>(4); // Default to stage 4 (completed/static) for mobile-first/instant rendering
+  const [isMobile, setIsMobile] = useState<boolean>(true); // Default to true (optimistic mobile)
 
   useEffect(() => {
-    const frame = requestAnimationFrame(() => {
-      setMounted(true);
-    });
-    
-    // Coordinated opening sequence timeline
-    const t1 = setTimeout(() => setPhase(1), 2000); // 0-2s dolly-in complete, start logo assembly
-    const t2 = setTimeout(() => setPhase(2), 4500); // 2-4.5s assembly complete, trigger flash
-    const t3 = setTimeout(() => setPhase(3), 4800); // 4.5-4.8s flash complete, slide up / fade UI
-    const t4 = setTimeout(() => setPhase(4), 5500); // 5.5s layout complete, show scroll indicator
-
-    // Scroll to hero on page load if hash matches
+    let scrollTimer: any = null;
     if (typeof window !== "undefined" && window.location.hash === "#hero") {
-      setTimeout(() => {
+      scrollTimer = setTimeout(() => {
         document.getElementById("hero")?.scrollIntoView({ behavior: "smooth" });
       }, 500);
     }
 
+    if (typeof window !== "undefined") {
+      const mobile = window.innerWidth < 768;
+      setIsMobile(mobile);
+      if (mobile) {
+        return () => {
+          if (scrollTimer) clearTimeout(scrollTimer);
+        };
+      } else {
+        // Desktop: Downgrade to phase 0 on mount and start timeline coordinates converge
+        setPhase(0);
+      }
+    }
+
+    // Coordinated opening sequence timeline (LCP prioritized)
+    const t1 = setTimeout(() => setPhase(1), 300); // 0.3s Reveal noise filter and ambient effects
+    const t2 = setTimeout(() => setPhase(2), 1500); // 1.5s Secondary elements
+    const t3 = setTimeout(() => setPhase(3), 2500); // 2.5s Show scroll indicator
+    const t4 = setTimeout(() => setPhase(4), 3000); 
+
     return () => {
-      cancelAnimationFrame(frame);
       clearTimeout(t1);
       clearTimeout(t2);
       clearTimeout(t3);
       clearTimeout(t4);
+      if (scrollTimer) clearTimeout(scrollTimer);
     };
   }, []);
-
-
-
-  if (!mounted) return null;
 
   return (
     <section
@@ -94,13 +118,15 @@ export default function HeroSection() {
       {/* Coordinates 3D Scene states and scroll tracking */}
       <HeroScene />
 
-      {/* 2. Soft atmospheric noise overlay (photographic grain) */}
-      <div 
-        className="absolute inset-0 opacity-[0.015] dark:opacity-[0.025] pointer-events-none z-10"
-        style={{
-          backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
-        }}
-      />
+      {/* 2. Soft atmospheric noise overlay (photographic grain) - Deferred to prevent LCP hijack */}
+      {phase >= 1 && !isMobile && (
+        <div 
+          className="absolute inset-0 opacity-[0.015] dark:opacity-[0.025] pointer-events-none z-10"
+          style={{
+            backgroundImage: `url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.65' numOctaves='3' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E")`,
+          }}
+        />
+      )}
 
       {/* 3. Volumetric Radial Aurora Glow (Centered behind Core) */}
       <div 
@@ -120,14 +146,12 @@ export default function HeroSection() {
             ========================================== */}
         <motion.div
           layout
-          className={`relative flex flex-col items-center select-none ${
-            phase >= 3 ? "mb-6 scale-90" : "my-12 scale-125"
-          }`}
+          className="relative flex flex-col items-center select-none mb-6 scale-90"
           transition={{ duration: 1.0, ease: easeOutExpo }}
         >
           {/* Logo assembly particles (visible only during converge phase) */}
           <AnimatePresence>
-            {phase === 1 && (
+            {phase === 1 && isMobile === false && (
               <div className="absolute inset-0 flex items-center justify-center pointer-events-none z-20">
                 {LOGO_PARTICLES.map((p, idx) => {
                   const start = STATIC_STARTS[idx] || { x: 0, y: 0 };
@@ -155,7 +179,7 @@ export default function HeroSection() {
 
           {/* Convergence flash overlay */}
           <AnimatePresence>
-            {phase === 2 && (
+            {phase === 2 && isMobile === false && (
               <motion.div
                 initial={{ scale: 0.1, opacity: 0 }}
                 animate={{ scale: [0.1, 2.0, 3.2], opacity: [0, 1, 0] }}
@@ -179,169 +203,119 @@ export default function HeroSection() {
               <div className="absolute inset-0 bg-[var(--accent-color)]/10 blur-xl rounded-full animate-pulse pointer-events-none" />
             )}
             
-            <AnimatePresence mode="wait">
-              {phase < 3 ? (
-                <motion.svg
-                  key="assembling-logo"
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  className="w-14 h-14 text-[var(--accent-color)]"
-                  viewBox="0 0 100 100"
-                  fill="none"
-                >
-                  {/* Outer boundary circle */}
-                  <motion.circle
-                    cx="50"
-                    cy="50"
-                    r="38"
-                    stroke="currentColor"
-                    strokeWidth="2.0"
-                    strokeLinecap="round"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={phase >= 1 ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}
-                    transition={{ duration: 2.2, delay: 0.2, ease: "easeInOut" }}
-                  />
-                  {/* Inner V logic shape */}
-                  <motion.path
-                    d="M32 38 L50 66 L68 38"
-                    stroke="currentColor"
-                    strokeWidth="3.2"
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    initial={{ pathLength: 0, opacity: 0 }}
-                    animate={phase >= 1 ? { pathLength: 1, opacity: 1 } : { pathLength: 0, opacity: 0 }}
-                    transition={{ duration: 2.0, delay: 0.5, ease: "easeInOut" }}
-                  />
-                  {/* Glowing core dot */}
-                  {phase >= 2 && (
-                    <motion.circle
-                      cx="50"
-                      cy="46"
-                      r="4.5"
-                      fill="currentColor"
-                      initial={{ scale: 0, opacity: 0 }}
-                      animate={{ scale: 1, opacity: 1 }}
-                      transition={{ type: "spring", stiffness: 260, damping: 20 }}
-                      className="shadow-sm shadow-blue-500"
-                    />
-                  )}
-                </motion.svg>
-              ) : (
                 <motion.div
                   key="final-logo"
-                  initial={{ scale: 0.4, opacity: 0, filter: "blur(5px)" }}
-                  animate={{ scale: 1, opacity: 1, filter: "blur(0px)" }}
-                  transition={{ type: "spring", stiffness: 220, damping: 16 }}
-                  className="w-14 h-14 rounded-2xl bg-white/10 dark:bg-white/5 border border-white/10 dark:border-white/5 flex items-center justify-center shadow-md backdrop-blur-md relative"
+                  initial={isMobile === false ? { scale: 0.8, opacity: 0, filter: "blur(5px)" } : undefined}
+                  animate={isMobile === false ? { scale: 1, opacity: 1, filter: "blur(0px)" } : undefined}
+                  transition={isMobile === false ? { duration: 0.6, delay: 0, ease: "easeOut" } : undefined}
+                  className="logo-container w-14 h-14 rounded-2xl bg-white/10 dark:bg-white/5 border border-white/10 dark:border-white/5 flex items-center justify-center shadow-md backdrop-blur-md relative"
                 >
                   {/* Top specular reflection highlight */}
                   <div className="absolute top-0 inset-x-0 h-[1px] bg-gradient-to-r from-transparent via-white/20 to-transparent pointer-events-none" />
-                  <img src="/logo.png" alt="Vanikara Logo" className="w-8.5 h-auto" width={34} height={23} />
+                  <Image src="/logo.png" alt="Vanikara Logo" className="w-[34px] h-[23px]" width={34} height={23} priority />
                 </motion.div>
-              )}
-            </AnimatePresence>
           </div>
 
           {/* Company identity label */}
-          {phase >= 3 && (
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.6, ease: easeOutExpo }}
-              className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/40 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-full shadow-sm"
-            >
-              <span className="font-display font-black text-[9px] tracking-widest text-[var(--text-primary)] uppercase">
-                VANIKARA INTELLIGENCE
-              </span>
-            </motion.div>
-          )}
+          <motion.div
+            initial={isMobile === false ? "hidden" : undefined}
+            animate={isMobile === false ? "visible" : undefined}
+            variants={isMobile === false ? badgeVariants : undefined}
+            className="inline-flex items-center gap-1.5 px-3 py-1 bg-white/40 dark:bg-white/5 border border-white/20 dark:border-white/10 rounded-full shadow-sm mt-3"
+          >
+            <span className="font-display font-black text-[9px] tracking-widest text-[var(--text-primary)] uppercase">
+              VANIKARA INTELLIGENCE
+            </span>
+          </motion.div>
         </motion.div>
 
         {/* ==========================================
             HEADLINE, DESCRIPTION, CTAS & SPACER
             ========================================== */}
-        <AnimatePresence>
-          {phase >= 3 && (
-            <div className="flex flex-col items-center w-full">
-              {/* Headline */}
-              <motion.h1
-                initial={{ opacity: 0, y: 25 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.9, delay: 0.35, ease: easeOutExpo }}
-                className="font-display font-black leading-[1.1] tracking-tight mb-5 text-[var(--text-primary)] uppercase text-balance max-w-[700px] w-full"
-                style={{ fontSize: "clamp(1.8rem, 4.2vw, 3.2rem)" }}
-              >
-                Engineering Tomorrow&apos;s <br />
-                <span className="gradient-text">Intelligent Digital Experiences</span>
-              </motion.h1>
+        <motion.div 
+          initial={isMobile === false ? "hidden" : undefined}
+          animate={isMobile === false ? "visible" : undefined}
+          variants={isMobile === false ? {
+            hidden: { pointerEvents: "none" },
+            visible: { pointerEvents: "auto" }
+          } : undefined}
+          className="flex flex-col items-center w-full"
+        >
+          {/* Headline */}
+          <motion.h1
+            variants={isMobile === false ? h1Variants : undefined}
+            className="font-display font-black leading-[1.1] tracking-tight mb-5 text-[var(--text-primary)] uppercase text-balance max-w-[700px] w-full"
+            style={{ fontSize: "clamp(1.8rem, 4.2vw, 3.2rem)" }}
+          >
+            Engineering Tomorrow&apos;s <br />
+            <span className="gradient-text">Intelligent Digital Experiences</span>
+          </motion.h1>
 
-              {/* Supporting Description */}
-              <motion.p
-                initial={{ opacity: 0, y: 15 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, delay: 0.55, ease: easeOutQuart }}
-                className="text-[var(--text-secondary)] w-full max-w-[620px] mx-auto mb-8 leading-relaxed font-semibold"
-                style={{ fontSize: "clamp(0.875rem, 1.5vw, 1rem)" }}
-              >
-                VANIKARA Intelligence Private Limited is an incorporated Indian technology company engineering high-performance AI layers, unified student systems, and secure cloud platforms.
-              </motion.p>
+          {/* Supporting Description */}
+          <motion.p
+            variants={isMobile === false ? pVariants : undefined}
+            className="text-[var(--text-secondary)] w-full max-w-[620px] mx-auto mb-8 leading-relaxed font-semibold"
+            style={{ fontSize: "clamp(0.875rem, 1.5vw, 1rem)" }}
+          >
+            VANIKARA Intelligence Private Limited is an incorporated Indian technology company engineering high-performance AI layers, unified student systems, and secure cloud platforms.
+          </motion.p>
 
-              {/* CTAs */}
-              <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.7, delay: 0.75, ease: easeOutQuart }}
-                className="flex flex-col sm:flex-row gap-3.5 justify-center items-center w-full sm:w-auto"
-              >
-                <Button 
-                  href="/products" 
-                  variant="primary" 
-                  size="md" 
-                  className="w-full sm:w-auto" 
-                  magnetic
-                >
-                  Explore Products
-                </Button>
-                <Button 
-                  href="/ai" 
-                  variant="secondary" 
-                  size="md" 
-                  className="w-full sm:w-auto" 
-                  magnetic
-                >
-                  Meet CYGMA AI
-                </Button>
-              </motion.div>
-
-            </div>
-          )}
-        </AnimatePresence>
+          {/* CTAs */}
+          <motion.div
+            variants={isMobile === false ? ctaVariants : undefined}
+            className="flex flex-col sm:flex-row gap-3.5 justify-center items-center w-full sm:w-auto"
+          >
+            <Button 
+              href="/products" 
+              variant="primary" 
+              size="md" 
+              className="w-full sm:w-auto" 
+              magnetic
+            >
+              Explore Products
+            </Button>
+            <Button 
+              href="/ai" 
+              variant="secondary" 
+              size="md" 
+              className="w-full sm:w-auto" 
+              magnetic
+            >
+              Meet CYGMA AI
+            </Button>
+          </motion.div>
+        </motion.div>
       </div>
 
       {/* ==========================================
-          SCROLL INDICATOR (Fades in at 8.0s)
+          SCROLL INDICATOR (Fades in at 2.5s)
           ========================================== */}
-      <AnimatePresence>
-        {phase >= 4 && (
-          <motion.div
-            initial={{ opacity: 0, y: -10 }}
-            animate={{ 
-              opacity: 0.6, 
-              y: [0, 8, 0] 
-            }}
-            transition={{
+      <motion.div
+        initial="hidden"
+        animate={phase >= 3 ? "visible" : "hidden"}
+        variants={isMobile === false ? {
+          hidden: { opacity: 0, y: -10, pointerEvents: "none" as const },
+          visible: { 
+            opacity: [0, 0.6, 0.6], 
+            y: [0, 8, 0],
+            pointerEvents: "auto" as const,
+            transition: {
               opacity: { duration: 0.6 },
               y: { repeat: Infinity, duration: 1.8, ease: "easeInOut" }
-            }}
-            className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors select-none"
-            onClick={() => {
-              document.getElementById("our-vision")?.scrollIntoView({ behavior: "smooth" });
-            }}
-          >
-            <span className="text-[8px] font-black uppercase tracking-widest font-mono">SCROLL</span>
-            <ChevronDown className="w-3.5 h-3.5" />
-          </motion.div>
-        )}
-      </AnimatePresence>
+            }
+          }
+        } : {
+          hidden: { opacity: 0, pointerEvents: "none" as const },
+          visible: { opacity: 0.6, pointerEvents: "auto" as const }
+        }}
+        className="absolute bottom-6 left-1/2 -translate-x-1/2 z-20 flex flex-col items-center gap-1.5 cursor-pointer text-[var(--text-secondary)] hover:text-[var(--text-primary)] transition-colors select-none"
+        onClick={() => {
+          document.getElementById("our-vision")?.scrollIntoView({ behavior: "smooth" });
+        }}
+      >
+        <span className="text-[8px] font-black uppercase tracking-widest font-mono">SCROLL</span>
+        <ChevronDown className="w-3.5 h-3.5" />
+      </motion.div>
     </section>
   );
 }

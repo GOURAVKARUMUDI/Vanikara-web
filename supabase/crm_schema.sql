@@ -53,6 +53,7 @@ create table if not exists public.payments (
   razorpay_order_id text,
   razorpay_payment_id text,
   razorpay_signature text,
+  updated_at timestamp with time zone,
   created_at timestamp with time zone default timezone('utc'::text, now()) not null
 );
 
@@ -61,3 +62,18 @@ alter table public.leads enable row level security;
 alter table public.clients enable row level security;
 alter table public.payments enable row level security;
 alter table public.packages enable row level security;
+
+-- Policies for CRM Tables
+CREATE POLICY "Admins can manage leads" ON public.leads FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "Admins can manage clients" ON public.clients FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "Admins can manage payments" ON public.payments FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+);
+CREATE POLICY "Everyone can view packages" ON public.packages FOR SELECT USING (true);
+CREATE POLICY "Admins can manage packages" ON public.packages FOR ALL USING (
+  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+);

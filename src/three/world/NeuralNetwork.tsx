@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useRef, useMemo } from "react";
+import React, { useRef, useMemo, useEffect } from "react";
 import { useFrame } from "@react-three/fiber";
 import * as THREE from "three";
 import { useCygmaWorld } from "@/context/CygmaWorldContext";
@@ -39,6 +39,28 @@ export default function NeuralNetwork({ nodeCount = 24 }) {
   const isDark = resolvedTheme === "dark";
   const revealProgress = useRef(0);
   const activeTimeRef = useRef(0);
+  const interactedRef = useRef(false);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && window.innerWidth >= 768) {
+      interactedRef.current = true;
+      return;
+    }
+    const handleInteraction = () => {
+      interactedRef.current = true;
+      window.removeEventListener("pointerdown", handleInteraction);
+      window.removeEventListener("scroll", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+    };
+    window.addEventListener("pointerdown", handleInteraction, { passive: true });
+    window.addEventListener("scroll", handleInteraction, { passive: true });
+    window.addEventListener("touchstart", handleInteraction, { passive: true });
+    return () => {
+      window.removeEventListener("pointerdown", handleInteraction);
+      window.removeEventListener("scroll", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+    };
+  }, []);
 
   const primaryPointsRef = useRef<THREE.Points>(null);
   const secondaryPointsRef = useRef<THREE.Points>(null);
@@ -201,6 +223,10 @@ export default function NeuralNetwork({ nodeCount = 24 }) {
   const linePositions = useMemo(() => new Float32Array(maxLineVertices * 3), [uniqueConnections]);
   const lineColors = useMemo(() => new Float32Array(maxLineVertices * 3), [uniqueConnections]);
 
+  const themeColor = useMemo(() => {
+    return new THREE.Color(isDark ? "#4f46e5" : "#60a5fa");
+  }, [isDark]);
+
   const activeCoords = useMemo(() => {
     return allNodes.map(() => new THREE.Vector3());
   }, [allNodes]);
@@ -227,6 +253,14 @@ export default function NeuralNetwork({ nodeCount = 24 }) {
     return new THREE.CanvasTexture(canvas);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (circularTexture) {
+        circularTexture.dispose();
+      }
+    };
+  }, [circularTexture]);
+
   useFrame((state, delta) => {
     // A. Apply dynamic opacity checks and lock nodes before sceneReady compiles
     if (!sceneReady) {
@@ -250,8 +284,8 @@ export default function NeuralNetwork({ nodeCount = 24 }) {
     const timeSinceReady = revealProgress.current;
     const revealOpacity = Math.min(1.0, timeSinceReady / 1.5);
 
-    // Active movement time only ticks after revealOpacity completes (1.5s)
-    if (timeSinceReady >= 1.5) {
+    // Active movement time only ticks after revealOpacity completes (1.5s) and user has interacted on mobile
+    if (timeSinceReady >= 1.5 && interactedRef.current) {
       activeTimeRef.current += delta;
     }
     const activeTime = activeTimeRef.current;
@@ -339,8 +373,6 @@ export default function NeuralNetwork({ nodeCount = 24 }) {
     }
 
     // F. Compute connection segments using distance-based fading and animated flow intensity pulse
-    const baseColorStr = isDark ? "#4f46e5" : "#60a5fa"; // Brand Indigo vs Sky Blue
-    const themeColor = new THREE.Color(baseColorStr);
     const threshold = 4.2;
     let lineIdx = 0;
 

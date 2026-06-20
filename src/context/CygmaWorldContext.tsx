@@ -21,8 +21,6 @@ interface CygmaWorldContextType {
   setView: (view: CygmaView) => void;
   isSuccess: boolean;
   setIsSuccess: (success: boolean) => void;
-  scrollOffset: number;
-  setScrollOffset: (offset: number) => void;
   navbarVisible: boolean;
   setNavbarVisible: (visible: boolean) => void;
   isTransitioning: boolean;
@@ -55,7 +53,6 @@ export function CygmaWorldProvider({ children }: { children: React.ReactNode }) 
 
   const [view, setView] = useState<CygmaView>(() => getInitialView(pathname));
   const [isSuccess, setIsSuccess] = useState(false);
-  const [scrollOffset, setScrollOffset] = useState(0);
   const [navbarVisible, setNavbarVisible] = useState(() => getInitialNavbarVisible(pathname));
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
@@ -101,23 +98,27 @@ export function CygmaWorldProvider({ children }: { children: React.ReactNode }) 
     }
   }
 
+  const contextValue = React.useMemo(() => ({
+    view,
+    setView,
+    isSuccess,
+    setIsSuccess,
+    navbarVisible,
+    setNavbarVisible,
+    isTransitioning,
+    setIsTransitioning,
+    sceneReady,
+    setSceneReady,
+  }), [
+    view,
+    isSuccess,
+    navbarVisible,
+    isTransitioning,
+    sceneReady,
+  ]);
+
   return (
-    <CygmaWorldContext.Provider
-      value={{
-        view,
-        setView,
-        isSuccess,
-        setIsSuccess,
-        scrollOffset,
-        setScrollOffset,
-        navbarVisible,
-        setNavbarVisible,
-        isTransitioning,
-        setIsTransitioning,
-        sceneReady,
-        setSceneReady,
-      }}
-    >
+    <CygmaWorldContext.Provider value={contextValue}>
       {children}
     </CygmaWorldContext.Provider>
   );

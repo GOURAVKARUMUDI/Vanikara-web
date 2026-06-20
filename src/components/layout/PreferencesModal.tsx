@@ -1,7 +1,7 @@
 "use client";
 
 import { useConsent, ConsentSettings } from "@/context/ConsentContext";
-import { usePerformance, PerformanceOverride, PerformanceProfile } from "@/context/PerformanceContext";
+import { usePerformance, usePerformanceFps, PerformanceOverride, PerformanceProfile } from "@/context/PerformanceContext";
 import { motion, AnimatePresence } from "framer-motion";
 import { X, Lock, Eye, Cpu, Zap, Activity, ShieldCheck, Battery } from "lucide-react";
 import React, { useState, useEffect } from "react";
@@ -13,7 +13,8 @@ import Button from "@/components/ui/Button";
  */
 export default function PreferencesModal() {
   const { showModal, consent, closePreferences, savePreferences, acceptAll, rejectOptional } = useConsent();
-  const { profile, currentProfile, fps, setProfileOverride, detectedSpecs, reduceMotion, setReduceMotion } = usePerformance();
+  const { profile, currentProfile, setProfileOverride, detectedSpecs, reduceMotion, setReduceMotion } = usePerformance();
+  const fps = usePerformanceFps();
 
   const [activeTab, setActiveTab] = useState<"privacy" | "performance">("privacy");
 

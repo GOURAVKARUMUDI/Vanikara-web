@@ -25,6 +25,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const { view, isTransitioning, sceneReady } = useCygmaWorld();
   const { resolvedTheme } = useTheme();
   const [showFlash, setShowFlash] = useState(false);
+  const [deferCanvas, setDeferCanvas] = useState(false);
+  const [reducedMotionState, setReducedMotionState] = useState<"user" | "always">("always");
 
   const mainRoutes = ["/", "/about", "/projects", "/products", "/ai", "/login", "/careers", "/contact", "/dashboard", "/admin"];
   const showCanvas = mainRoutes.includes(pathname);
@@ -63,6 +65,60 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
+  // Defer heavy Three.js hydration to unblock main thread and improve LCP
+  useEffect(() => {
+    if (typeof window === "undefined") return;
+
+    const isMobile = window.innerWidth < 768;
+    if (!isMobile) {
+      setReducedMotionState("user");
+      // Desktop: Keep exactly as is (100ms delay) to keep desktop performance identical
+      const timer = setTimeout(() => {
+        setDeferCanvas(true);
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+
+    // Mobile: Redesigned deferred boot waiting for user interaction or 6s safety timeout
+    let loaded = false;
+    let timerId: any = null;
+
+    const mountCanvas = () => {
+      if (loaded) return;
+      loaded = true;
+      
+      // Remove all interaction listeners
+      window.removeEventListener("scroll", mountCanvas);
+      window.removeEventListener("pointerdown", mountCanvas);
+      window.removeEventListener("touchstart", mountCanvas);
+      
+      if (typeof window.requestIdleCallback !== "undefined") {
+        window.requestIdleCallback(() => {
+          setDeferCanvas(true);
+        }, { timeout: 1000 });
+      } else {
+        setTimeout(() => {
+          setDeferCanvas(true);
+        }, 50);
+      }
+    };
+
+    // Listen for initial user interaction to trigger mounting
+    window.addEventListener("scroll", mountCanvas, { passive: true });
+    window.addEventListener("pointerdown", mountCanvas, { passive: true });
+    window.addEventListener("touchstart", mountCanvas, { passive: true });
+
+    // Safety fallback: mount canvas after 6000ms if no interaction occurs (unblocks Lighthouse completion)
+    timerId = setTimeout(mountCanvas, 6000);
+
+    return () => {
+      window.removeEventListener("scroll", mountCanvas);
+      window.removeEventListener("pointerdown", mountCanvas);
+      window.removeEventListener("touchstart", mountCanvas);
+      if (timerId) clearTimeout(timerId);
+    };
+  }, []);
+
   // Sync Success White Flash Timeline
   useEffect(() => {
     if (view === "success") {
@@ -82,8 +138,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   }, [view]);
 
   return (
-    <MotionConfig reducedMotion="user">
-      <div className="flex flex-col min-h-screen bg-transparent">
+    <MotionConfig reducedMotion={reducedMotionState}>
+      <div className="flex flex-col min-h-screen bg-transparent relative">
       <a
         href="#main-content"
         className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--accent-color)] focus:text-white focus:rounded-xl focus:shadow-lg focus:outline-none"
@@ -99,7 +155,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       {/* Global 3D World Scene Backdrop */}
       {showCanvas && (
         <>
-          <IntelligenceWorld />
+          {deferCanvas && <IntelligenceWorld />}
           <div 
             className={`fixed inset-0 z-0 bg-[#030712] transition-opacity duration-[1500ms] ease-in-out pointer-events-none ${
               sceneReady ? "opacity-0" : "opacity-100"
@@ -126,14 +182,12 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <motion.main
         key={pathname}
         id="main-content"
-        initial={{ opacity: 0, scale: 0.99, filter: "blur(4px)" }}
+        initial={false}
         animate={{ 
-          opacity: isTransitioning ? 0 : 1, 
-          scale: isTransitioning ? 0.98 : 1, 
-          filter: isTransitioning ? "blur(4px)" : "blur(0px)" 
+          opacity: isTransitioning ? 0 : 1
         }}
-        transition={{ duration: 0.45, ease: [0.16, 1, 0.3, 1] }}
-        className="flex-grow pt-16 z-10"
+        transition={{ duration: 0.3, ease: "easeInOut" }}
+        className="flex-grow pt-16 z-10 relative"
       >
         {children}
       </motion.main>
