@@ -49,7 +49,7 @@ export default function CapacitorManager() {
     // 3. Configure soft keyboard scroll constraints
     const registerKeyboard = async () => {
       try {
-        await Keyboard.setScroll({ scroll: true });
+        await Keyboard.setScroll({ isDisabled: false });
       } catch (err) {
         console.warn("[Capacitor] Keyboard.setScroll warning:", err);
       }
