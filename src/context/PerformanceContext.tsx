@@ -140,21 +140,47 @@ export function PerformanceProvider({ children }: { children: React.ReactNode })
   useEffect(() => {
     if (typeof window === "undefined") return;
 
+    const cores = navigator.hardwareConcurrency || 8;
+    const memory = (navigator as any).deviceMemory || 8;
     const dpr = window.devicePixelRatio || 1;
     const prefersReducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const isMobile = window.innerWidth < 768;
 
     setDetectedSpecs({
-      cores: navigator.hardwareConcurrency || 8,
-      memory: (navigator as any).deviceMemory || 8,
+      cores,
+      memory,
       dpr,
       prefersReducedMotion,
       connection: "optimized",
       gpu: "Hardware Accelerated",
     });
 
-    // Start all viewports at high to ensure identical immersive visuals on load,
-    // allowing the adaptive FPS feedback loop to downgrade performance dynamically if needed.
-    setAutoProfile("high");
+    // Grade initial profile grade automatically based on hardware resources to prevent initial WebGL lag spikes
+    let initialProfile: PerformanceProfile = "high";
+
+    if (prefersReducedMotion) {
+      initialProfile = "battery";
+    } else if (isMobile) {
+      // Mobile Viewports (highly sensitive to battery and CPU core limits)
+      if (cores <= 4 || memory < 4) {
+        initialProfile = "battery"; // Low-end CPU/RAM mobile
+      } else if (cores <= 6 || memory <= 6) {
+        initialProfile = "low";     // Mid-low spec mobile
+      } else {
+        initialProfile = "medium";  // Modern flagship mobile
+      }
+    } else {
+      // Desktop Viewports
+      if (cores <= 4 || memory < 4) {
+        initialProfile = "low";     // Legacy desktop/notebook
+      } else if (cores >= 12 && memory >= 16) {
+        initialProfile = "ultra";   // Workstation or Gaming Desktop
+      } else {
+        initialProfile = "high";    // Standard modern laptop/desktop
+      }
+    }
+
+    setAutoProfile(initialProfile);
   }, []);
 
   // Simple FPS counter loop with dynamic tuning (throttled updates to state)
