@@ -82,9 +82,18 @@ export default function CareersPage() {
             body: JSON.stringify(payload)
           });
           
-          const resData = await response.json();
+          let resData: any = null;
+          const contentType = response.headers.get("content-type");
+          if (contentType && contentType.includes("application/json")) {
+            try {
+              resData = await response.json();
+            } catch (jsonErr) {
+              // Ignore json parse error here as we'll check response.ok next
+            }
+          }
+
           if (!response.ok) {
-            throw new Error(resData.error || "Failed to submit application");
+            throw new Error(resData?.error || `Server Error (${response.status}). Please try again later.`);
           }
           
           setStatus("success");
@@ -98,7 +107,10 @@ export default function CareersPage() {
           });
           setFile(null);
         } catch (postErr: any) {
-          setErrors(postErr.message || "Failed to dispatch packet.");
+          const friendlyMsg = postErr.message.includes("is not valid JSON")
+            ? "Server returned an invalid response. Please try again later."
+            : postErr.message;
+          setErrors(friendlyMsg || "Failed to dispatch packet.");
           setStatus("idle");
         }
       };
@@ -108,7 +120,10 @@ export default function CareersPage() {
         setStatus("idle");
       };
     } catch (err: any) {
-      setErrors(err.message || "Something went wrong. Please check fields and try again.");
+      const friendlyMsg = err.message.includes("is not valid JSON")
+        ? "Server returned an invalid response. Please try again later."
+        : err.message;
+      setErrors(friendlyMsg || "Something went wrong. Please check fields and try again.");
       setStatus("idle");
     }
   };

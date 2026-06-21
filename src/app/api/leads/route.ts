@@ -6,6 +6,7 @@ import { isAdmin } from "@/lib/isAdmin";
 import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { sanitize, apiResponse, logError } from "@/lib/security";
+import { submitToGoogleForm } from "@/lib/googleForms";
 
 export async function GET() {
   try {
@@ -50,6 +51,27 @@ export async function POST(req: Request) {
       .single();
 
     if (error) throw error;
+
+    // Sync to Google Form if configured (Secondary/Operational Flow)
+    if (source && source !== "form") {
+      const googleFormSuccess = await submitToGoogleForm(source, {
+        name: sName,
+        email: sEmail,
+        message: sMsg,
+        details: sMsg,
+        comment: sMsg,
+        description: sMsg,
+      });
+
+      const formUrlEnvName = `GOOGLE_FORM_${source.toUpperCase()}_URL`;
+      if (!googleFormSuccess && (process.env[formUrlEnvName] || process.env.NODE_ENV === "production")) {
+        return NextResponse.json(
+          apiResponse(false, null, `Google Forms operational sync failed for ${source}. Please try again.`),
+          { status: 502 }
+        );
+      }
+    }
+
     return NextResponse.json(apiResponse(true, data));
   } catch (error: any) {
     logError("Leads POST", error);

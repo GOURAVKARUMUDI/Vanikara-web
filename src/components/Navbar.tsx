@@ -374,7 +374,7 @@ export default function Navbar() {
           >
             <div className="flex justify-between items-center mt-4">
               <div className="flex items-center gap-2">
-                <img src="/logo.png" alt="Vanikara Logo" className="w-7 h-auto" width={28} height={28} />
+                <Image src="/logo.png" alt="Vanikara Logo" className="w-7 h-auto" width={28} height={28} />
                 <span className="font-display font-black text-xs tracking-widest text-[var(--text-primary)]">
                   VANIKARA
                 </span>

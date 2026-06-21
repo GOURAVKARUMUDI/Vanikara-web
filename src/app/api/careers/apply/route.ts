@@ -6,6 +6,7 @@ import nodemailer from "nodemailer";
 import fs from "fs";
 import path from "path";
 import { sanitize, isValidEmail, apiResponse, logError } from "@/lib/security";
+import { submitToGoogleForm } from "@/lib/googleForms";
 
 export async function POST(req: Request) {
   try {
@@ -95,6 +96,39 @@ export async function POST(req: Request) {
       logError("Careers Database Persistence Failure", dbError.message);
       return NextResponse.json(apiResponse(false, null, "Failed to register application in database"), { status: 500 });
     }
+
+    // 5. Sync to Google Form (Secondary Operational Flow)
+    const isInternship = sPosition.toLowerCase().includes("intern") || sPosition.toLowerCase().includes("coordinator");
+    const formType = isInternship ? "internship" : "careers";
+
+    const googleFormSuccess = isInternship
+      ? await submitToGoogleForm("internship", {
+          name: sName,
+          email: sEmail,
+          phone: sPhone,
+          whyJoin: `Position: ${sPosition}\nPortfolio: ${sPortfolio}\n\nCover Letter:\n${sCover}`,
+          resumeSubmitted: resumeUrl,
+          declaration: "I confirm all information is accurate."
+        })
+      : await submitToGoogleForm("careers", {
+          name: sName,
+          email: sEmail,
+          phone: sPhone,
+          position: sPosition,
+          resumeUrl: resumeUrl,
+          coverLetter: `Portfolio: ${sPortfolio}\n\nCover Letter:\n${sCover}`,
+          declaration: "I confirm all information is accurate."
+        });
+
+    const formUrlEnvName = isInternship ? "GOOGLE_FORM_INTERNSHIP_URL" : "GOOGLE_FORM_CAREERS_URL";
+    if (!googleFormSuccess && (process.env[formUrlEnvName] || process.env.NODE_ENV === "production")) {
+      return NextResponse.json(
+        apiResponse(false, null, "Google Forms operational sync failed. Please try again in a few moments."),
+        { status: 502 }
+      );
+    }
+
+
 
     // 5. Send Transactional Confirmation Emails via SMTP Nodemailer
     if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {

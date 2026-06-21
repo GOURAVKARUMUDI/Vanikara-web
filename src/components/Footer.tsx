@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { Mail, Linkedin, Github } from "lucide-react";
 import { useConsent } from "@/context/ConsentContext";
 
@@ -19,7 +20,7 @@ export default function Footer() {
           <div className="flex flex-col gap-4">
             <Link href="/" className="flex items-center gap-2 group">
               <div className="w-9 h-9 rounded-xl flex items-center justify-center bg-white/10 border border-white/10 shadow-sm">
-                <img src="/logo.png" alt="Vanikara Logo" className="w-7 h-auto group-hover:scale-105 transition-transform" width={28} height={28} />
+                <Image src="/logo.png" alt="Vanikara Logo" className="w-7 h-auto group-hover:scale-105 transition-transform" width={28} height={28} />
               </div>
               <span className="font-display font-black text-sm tracking-widest text-[var(--text-primary)]">
                 VANIKARA

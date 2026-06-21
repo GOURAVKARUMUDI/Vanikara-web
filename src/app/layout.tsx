@@ -35,6 +35,7 @@ export const metadata: Metadata = {
   description:
     'VANIKARA INTELLIGENCE PRIVATE LIMITED builds premium digital platforms — from student marketplaces to enterprise software. We craft technology that matters.',
   keywords: ['VANIKARA INTELLIGENCE', 'VANIKARA INTELLIGENCE PRIVATE LIMITED', 'technology', 'software development', 'platform engineering', 'web apps'],
+  manifest: '/manifest.json',
   openGraph: {
     title: 'VANIKARA INTELLIGENCE — Innovative Technology Solutions',
     description: 'We build technology that matters.',
@@ -52,7 +53,6 @@ export default function RootLayout({
   return (
     <html lang="en" data-scroll-behavior="smooth">
       <head>
-        <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#1E6BD6" />
         <script
           type="application/ld+json"

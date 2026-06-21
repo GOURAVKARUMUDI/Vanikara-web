@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import Image from 'next/image';
 import Button from '@/components/ui/Button';
 
 export default function NotFound() {
@@ -8,7 +9,7 @@ export default function NotFound() {
         
         {/* Logo Container */}
         <div className="w-16 h-16 mx-auto rounded-2xl flex items-center justify-center bg-white/10 border border-[var(--glass-border)] shadow-sm">
-          <img src="/logo.png" alt="VANIKARA Logo" className="w-10 h-auto" />
+          <Image src="/logo.png" alt="VANIKARA Logo" className="w-10 h-auto" width={40} height={40} />
         </div>
         
         <div className="space-y-2">

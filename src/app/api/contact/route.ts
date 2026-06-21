@@ -4,6 +4,7 @@ import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { supabaseService } from "@/utils/supabase/service";
 import { sanitize, isValidEmail, apiResponse, logError, logInfo, isBot } from "@/lib/security";
+import { submitToGoogleForm } from "@/lib/googleForms";
 
 export async function POST(req: Request) {
   try {
@@ -53,7 +54,25 @@ export async function POST(req: Request) {
       return NextResponse.json(apiResponse(false, null, "Failed to persist inquiry details"), { status: 500 });
     }
 
-    // 5. Send Transactional Notification Email via Nodemailer (Non-blocking/Resilient)
+    // 5. Sync to Google Form (Secondary Operational Flow)
+    const googleFormSuccess = await submitToGoogleForm("contact", {
+      name: sName,
+      email: sEmail,
+      phone: sPhone,
+      company: sCompany,
+      subject: sSubject,
+      message: sMessage,
+      privacyAgreement: "I agree to the Privacy Policy."
+    });
+
+    if (!googleFormSuccess && (process.env.GOOGLE_FORM_CONTACT_URL || process.env.NODE_ENV === "production")) {
+      return NextResponse.json(
+        apiResponse(false, null, "Google Forms operational sync failed. Please try again in a few moments."),
+        { status: 502 }
+      );
+    }
+
+    // 6. Send Transactional Notification Email via Nodemailer (Non-blocking/Resilient)
     if (process.env.GMAIL_USER && process.env.GMAIL_PASS) {
       try {
         const transporter = nodemailer.createTransport({

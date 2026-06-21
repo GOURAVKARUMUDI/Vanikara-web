@@ -61,17 +61,29 @@ export default function ContactForm() {
         body: JSON.stringify(form),
       });
 
-      const data = await response.json();
+      let data: any = null;
+      const contentType = response.headers.get("content-type");
+      if (contentType && contentType.includes("application/json")) {
+        try {
+          data = await response.json();
+        } catch (jsonErr) {
+          // Ignore json parse error here as we'll check response.ok next
+        }
+      }
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to submit message");
+        throw new Error(data?.error || `Server Error (${response.status}). Please try again later.`);
       }
 
       logger.form("Contact", "success");
       setStatus("success");
     } catch (err: any) {
       logger.error("Failed to submit contact form", err);
-      setErrors(err.message || "Something went wrong. Please check fields and try again.");
+      // Clean up raw JSON parser error tokens for user display
+      const friendlyMsg = err.message.includes("is not valid JSON")
+        ? "Server returned an invalid response. Please try again later."
+        : err.message;
+      setErrors(friendlyMsg || "Something went wrong. Please check fields and try again.");
       setStatus("idle");
     }
   };

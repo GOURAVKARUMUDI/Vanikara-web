@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import dynamic from "next/dynamic";
 import { motion, AnimatePresence } from "framer-motion";
 import { useRouter } from "next/navigation";
@@ -181,7 +182,7 @@ export default function LoginPage() {
               {/* Logo Section */}
               <div className="flex flex-col items-center mb-8">
                 <div className="w-11 h-11 rounded-xl bg-white/10 shadow-sm border border-white/10 flex items-center justify-center mb-3">
-                  <img src="/logo.png" alt="Vanikara Logo" className="w-7 h-auto" />
+                  <Image src="/logo.png" alt="Vanikara Logo" className="w-7 h-auto" width={28} height={28} priority />
                 </div>
                 <span className="font-display font-black text-xxs tracking-widest text-[var(--accent-color)] uppercase">
                   VANIKARA INTELLIGENCE
