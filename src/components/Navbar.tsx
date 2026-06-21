@@ -175,7 +175,7 @@ export default function Navbar() {
   };
 
   return (
-    <div className="fixed top-0 inset-x-0 z-50 flex justify-center px-4 pt-4 pointer-events-none">
+    <div className="fixed top-0 inset-x-0 z-50 flex justify-center px-4 pt-4 fixed-nav-safe-area pointer-events-none">
       <motion.header
         role="banner"
         aria-label="Main Website Navigation"
@@ -383,7 +383,7 @@ export default function Navbar() {
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0, scale: 0.95 }}
             transition={{ duration: 0.25 }}
-            className="fixed inset-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl flex flex-col justify-between p-8 md:hidden pointer-events-auto"
+            className="fixed inset-0 z-40 bg-white/95 dark:bg-slate-950/95 backdrop-blur-2xl flex flex-col justify-between p-8 mobile-menu-safe-area md:hidden pointer-events-auto"
           >
             <div className="flex justify-between items-center mt-4">
               <div className="flex items-center gap-2">

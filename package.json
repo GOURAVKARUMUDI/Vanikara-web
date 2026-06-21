@@ -8,9 +8,16 @@
     "start": "next start",
     "lint": "eslint",
     "test:e2e": "playwright test --project=chromium",
-    "test:validate": "node scripts/e2e-validate.js"
+    "test:validate": "node scripts/e2e-validate.js",
+    "cap:sync": "npx cap sync",
+    "cap:open:android": "npx cap open android",
+    "cap:open:ios": "npx cap open ios"
   },
   "dependencies": {
+    "@capacitor/android": "^8.4.1",
+    "@capacitor/cli": "^8.4.1",
+    "@capacitor/core": "^8.4.1",
+    "@capacitor/ios": "^8.4.1",
     "@react-three/drei": "^10.7.7",
     "@react-three/fiber": "^9.6.1",
     "@react-three/postprocessing": "^3.0.4",

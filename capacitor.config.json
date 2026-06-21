@@ -1,0 +1,9 @@
+{
+  "appId": "com.vanikara.intelligence",
+  "appName": "VANIKARA Intelligence",
+  "webDir": "public",
+  "server": {
+    "url": "https://www.vanikara.com",
+    "cleartext": true
+  }
+}
