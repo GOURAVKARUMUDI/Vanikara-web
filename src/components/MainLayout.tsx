@@ -14,6 +14,7 @@ import ConsentBanner from "./layout/ConsentBanner";
 import PreferencesModal from "./layout/PreferencesModal";
 import { useTheme } from "./layout/ThemeContext";
 import { usePerformance } from "@/context/PerformanceContext";
+import CapacitorManager from "./layout/CapacitorManager";
 
 // Dynamic import for client-only R3F Canvas
 const IntelligenceWorld = dynamic(() => import("@/three/world/IntelligenceWorld"), {
@@ -129,6 +130,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <PreferencesModal />
       <CustomCursor />
       <Navbar />
+      <CapacitorManager />
 
       {/* Global 3D World Scene Backdrop */}
       {shouldRenderCanvas && (
