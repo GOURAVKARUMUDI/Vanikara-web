@@ -38,7 +38,7 @@ export const metadata: Metadata = {
   openGraph: {
     title: 'VANIKARA INTELLIGENCE — Innovative Technology Solutions',
     description: 'We build technology that matters.',
-    url: 'https://vanikara.com',
+    url: 'https://www.vanikara.com',
     siteName: 'VANIKARA INTELLIGENCE',
     type: 'website',
   },
@@ -62,8 +62,8 @@ export default function RootLayout({
               "@type": "Organization",
               "name": "VANIKARA Intelligence Private Limited",
               "alternateName": "VANIKARA",
-              "url": "https://vanikara.com",
-              "logo": "https://vanikara.com/logo.png",
+              "url": "https://www.vanikara.com",
+              "logo": "https://www.vanikara.com/logo.png",
               "contactPoint": {
                 "@type": "ContactPoint",
                 "contactType": "customer support",

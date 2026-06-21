@@ -11,7 +11,7 @@ export const getURL = () => {
   if (typeof window !== 'undefined' && window.location && window.location.origin) {
     url = window.location.origin;
   } else {
-    url = process.env.NEXT_PUBLIC_SITE_URL || 'https://vanikara.com';
+    url = process.env.NEXT_PUBLIC_SITE_URL || 'https://www.vanikara.com';
   }
 
   // Ensure 'http://' or 'https://' is included
