@@ -156,23 +156,27 @@ export default function BackgroundSystem() {
     <div className="fixed inset-0 overflow-hidden pointer-events-none -z-50 select-none">
       {/* Layer 1: Ambient Atmosphere Background Gradient (Controlled by body css transitions) */}
 
-      {/* Layer 2: Moving Light Orbs / Blurs */}
-      <div 
-        className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] max-w-[800px] rounded-full filter blur-[120px] transition-[opacity] duration-1000 animate-orb"
-        style={{
-          background: `radial-gradient(circle, var(--orb-1), transparent 70%)`,
-          mixBlendMode: "var(--orb-blend)" as any,
-          opacity: "var(--orb-opacity)",
-        }}
-      />
-      <div 
-        className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] max-w-[700px] rounded-full filter blur-[140px] transition-[opacity] duration-1000 animate-orb-slow"
-        style={{
-          background: `radial-gradient(circle, var(--orb-2), transparent 70%)`,
-          mixBlendMode: "var(--orb-blend)" as any,
-          opacity: "var(--orb-opacity)",
-        }}
-      />
+      {/* Layer 2: Moving Light Orbs / Blurs (Bypassed on low-end and mobile devices to prevent rendering lag) */}
+      {!isPerformanceLow && (
+        <>
+          <div 
+            className="absolute top-[-20%] left-[-10%] w-[60vw] h-[60vw] max-w-[800px] rounded-full filter blur-[120px] transition-[opacity] duration-1000 animate-orb"
+            style={{
+              background: `radial-gradient(circle, var(--orb-1), transparent 70%)`,
+              mixBlendMode: "var(--orb-blend)" as any,
+              opacity: "var(--orb-opacity)",
+            }}
+          />
+          <div 
+            className="absolute bottom-[-10%] right-[-10%] w-[50vw] h-[50vw] max-w-[700px] rounded-full filter blur-[140px] transition-[opacity] duration-1000 animate-orb-slow"
+            style={{
+              background: `radial-gradient(circle, var(--orb-2), transparent 70%)`,
+              mixBlendMode: "var(--orb-blend)" as any,
+              opacity: "var(--orb-opacity)",
+            }}
+          />
+        </>
+      )}
 
       {/* Layer 3: Interactive Canvas Particles */}
       <canvas 

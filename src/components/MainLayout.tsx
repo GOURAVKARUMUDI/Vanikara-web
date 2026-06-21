@@ -13,6 +13,7 @@ import SmoothScroll from "./layout/SmoothScroll";
 import ConsentBanner from "./layout/ConsentBanner";
 import PreferencesModal from "./layout/PreferencesModal";
 import { useTheme } from "./layout/ThemeContext";
+import { usePerformance } from "@/context/PerformanceContext";
 
 // Dynamic import for client-only R3F Canvas
 const IntelligenceWorld = dynamic(() => import("@/three/world/IntelligenceWorld"), {
@@ -22,14 +23,33 @@ const IntelligenceWorld = dynamic(() => import("@/three/world/IntelligenceWorld"
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAiPage = pathname === "/ai";
-  const { view, isTransitioning, sceneReady } = useCygmaWorld();
+  const { view, isTransitioning, sceneReady, setSceneReady } = useCygmaWorld();
   const { resolvedTheme } = useTheme();
+  const { currentProfile } = usePerformance();
   const [showFlash, setShowFlash] = useState(false);
   const [deferCanvas, setDeferCanvas] = useState(false);
   const [reducedMotionState, setReducedMotionState] = useState<"user" | "always">("always");
+  const [isMobileDevice, setIsMobileDevice] = useState(true); // Optimistic mobile to avoid hydration mismatch
 
   const mainRoutes = ["/", "/about", "/projects", "/products", "/ai", "/login", "/careers", "/contact", "/dashboard", "/admin"];
   const showCanvas = mainRoutes.includes(pathname);
+  const isPerformanceLow = currentProfile === "low" || currentProfile === "battery";
+  const shouldRenderCanvas = showCanvas && !isMobileDevice && !isPerformanceLow;
+
+  // Detect mobile viewport on mount
+  useEffect(() => {
+    if (typeof window !== "undefined") {
+      const mobile = window.innerWidth < 768;
+      setIsMobileDevice(mobile);
+    }
+  }, []);
+
+  // Mark scene as ready immediately if canvas is bypassed to unblock state transition gates
+  useEffect(() => {
+    if (!shouldRenderCanvas) {
+      setSceneReady(true);
+    }
+  }, [shouldRenderCanvas, setSceneReady]);
 
   // Disable native automatic scroll restoration to ensure clean starts at the top
   useEffect(() => {
@@ -67,57 +87,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
   // Defer heavy Three.js hydration to unblock main thread and improve LCP
   useEffect(() => {
-    if (typeof window === "undefined") return;
+    if (typeof window === "undefined" || !shouldRenderCanvas) return;
 
-    const isMobile = window.innerWidth < 768;
-    if (!isMobile) {
-      setReducedMotionState("user");
-      // Desktop: Keep exactly as is (100ms delay) to keep desktop performance identical
-      const timer = setTimeout(() => {
-        setDeferCanvas(true);
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-
-    // Mobile: Redesigned deferred boot waiting for user interaction or 6s safety timeout
-    let loaded = false;
-    let timerId: any = null;
-
-    const mountCanvas = () => {
-      if (loaded) return;
-      loaded = true;
-      
-      // Remove all interaction listeners
-      window.removeEventListener("scroll", mountCanvas);
-      window.removeEventListener("pointerdown", mountCanvas);
-      window.removeEventListener("touchstart", mountCanvas);
-      
-      if (typeof window.requestIdleCallback !== "undefined") {
-        window.requestIdleCallback(() => {
-          setDeferCanvas(true);
-        }, { timeout: 1000 });
-      } else {
-        setTimeout(() => {
-          setDeferCanvas(true);
-        }, 50);
-      }
-    };
-
-    // Listen for initial user interaction to trigger mounting
-    window.addEventListener("scroll", mountCanvas, { passive: true });
-    window.addEventListener("pointerdown", mountCanvas, { passive: true });
-    window.addEventListener("touchstart", mountCanvas, { passive: true });
-
-    // Safety fallback: mount canvas after 6000ms if no interaction occurs (unblocks Lighthouse completion)
-    timerId = setTimeout(mountCanvas, 6000);
-
-    return () => {
-      window.removeEventListener("scroll", mountCanvas);
-      window.removeEventListener("pointerdown", mountCanvas);
-      window.removeEventListener("touchstart", mountCanvas);
-      if (timerId) clearTimeout(timerId);
-    };
-  }, []);
+    setReducedMotionState("user");
+    // Desktop high-perf: Mount canvas after a short delay (100ms) to allow page text to paint first
+    const timer = setTimeout(() => {
+      setDeferCanvas(true);
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [shouldRenderCanvas]);
 
   // Sync Success White Flash Timeline
   useEffect(() => {
@@ -153,7 +131,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       <Navbar />
 
       {/* Global 3D World Scene Backdrop */}
-      {showCanvas && (
+      {shouldRenderCanvas && (
         <>
           {deferCanvas && <IntelligenceWorld />}
           <div 

@@ -128,15 +128,17 @@ export default function HeroSection() {
         />
       )}
 
-      {/* 3. Volumetric Radial Aurora Glow (Centered behind Core) */}
-      <div 
-        className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] h-[85vw] max-w-[700px] rounded-full filter blur-[130px] pointer-events-none animate-orb-slow" 
-        style={{
-          background: `radial-gradient(circle, var(--accent-color), transparent 70%)`,
-          mixBlendMode: "var(--orb-blend)" as any,
-          opacity: "calc(var(--orb-opacity) * 0.7)",
-        }}
-      />
+      {/* 3. Volumetric Radial Aurora Glow (Centered behind Core - Bypassed on mobile to prevent rendering stutter) */}
+      {!isMobile && (
+        <div 
+          className="absolute top-[50%] left-1/2 -translate-x-1/2 -translate-y-1/2 w-[85vw] h-[85vw] max-w-[700px] rounded-full filter blur-[130px] pointer-events-none animate-orb-slow" 
+          style={{
+            background: `radial-gradient(circle, var(--accent-color), transparent 70%)`,
+            mixBlendMode: "var(--orb-blend)" as any,
+            opacity: "calc(var(--orb-opacity) * 0.7)",
+          }}
+        />
+      )}
 
       {/* Main UI layout container */}
       <div className="max-w-[750px] w-full mx-auto relative z-20 flex flex-col items-center text-center">
