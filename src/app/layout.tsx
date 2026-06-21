@@ -7,6 +7,7 @@ import BackgroundSystem from '@/components/layout/BackgroundSystem';
 import { CygmaWorldProvider } from '@/context/CygmaWorldContext';
 import { ConsentProvider } from '@/context/ConsentContext';
 import { PerformanceProvider } from '@/context/PerformanceContext';
+import { PWAProvider } from '@/context/PWAContext';
 import { Inter, Outfit } from 'next/font/google';
 import { SpeedInsights } from '@vercel/speed-insights/next';
 import { Analytics } from '@vercel/analytics/react';
@@ -93,17 +94,19 @@ export default function RootLayout({
           <CygmaWorldProvider>
             <ConsentProvider>
               <PerformanceProvider>
-                <BackgroundSystem />
-                <ClientLogger />
-                <MainLayout>
-                  {children}
-                </MainLayout>
-                {process.env.VERCEL && (
-                  <>
-                    <SpeedInsights />
-                    <Analytics />
-                  </>
-                )}
+                <PWAProvider>
+                  <BackgroundSystem />
+                  <ClientLogger />
+                  <MainLayout>
+                    {children}
+                  </MainLayout>
+                  {process.env.VERCEL && (
+                    <>
+                      <SpeedInsights />
+                      <Analytics />
+                    </>
+                  )}
+                </PWAProvider>
               </PerformanceProvider>
             </ConsentProvider>
           </CygmaWorldProvider>

@@ -303,11 +303,11 @@ export default function Navbar() {
             {isInstallable && (
               <button
                 onClick={installApp}
-                className="p-2 rounded-full hover:bg-slate-500/10 border border-transparent hover:border-white/10 text-[var(--accent-color)] hover:text-[var(--accent-color)]/80 transition-all duration-300 cursor-pointer active:scale-95 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-color)]"
+                className="group p-2 rounded-full hover:bg-slate-500/10 border border-transparent hover:border-white/10 text-[var(--accent-color)] hover:text-[var(--accent-color)]/80 transition-all duration-300 cursor-pointer active:scale-95 flex items-center justify-center focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-[var(--accent-color)]"
                 title="Install App"
                 aria-label="Install App"
               >
-                <Download className="w-4 h-4" />
+                <Download className="w-4 h-4 transition-transform duration-300 group-hover:translate-y-[2px]" />
               </button>
             )}
 
