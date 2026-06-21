@@ -90,3 +90,7 @@ next-env.d.ts
 # ─── Android signing secrets ──────────────────────────────────
 android/app/vanikara-release.jks
 android/key.properties
+
+# ─── Native builds ───────────────────────────────────────────
+*.apk
+*.aab
