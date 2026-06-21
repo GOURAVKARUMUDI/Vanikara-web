@@ -16,7 +16,7 @@ const inter = Inter({
   variable: '--font-inter',
   weight: ['400', '600', '900'],
   display: 'swap',
-  preload: false,
+  preload: true,
 });
 
 const outfit = Outfit({
@@ -24,7 +24,7 @@ const outfit = Outfit({
   variable: '--font-outfit',
   weight: ['400', '600', '900'],
   display: 'swap',
-  preload: false,
+  preload: true,
 });
 
 export const metadata: Metadata = {

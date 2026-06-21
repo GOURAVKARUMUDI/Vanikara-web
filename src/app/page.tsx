@@ -1,18 +1,14 @@
-"use client";
-
 import HeroSection from "@/sections/home/HeroSection";
-import dynamic from "next/dynamic";
-
-const WhoWeAre = dynamic(() => import("@/sections/home/WhoWeAre"), { ssr: false });
-const OurVision = dynamic(() => import("@/sections/home/OurVision"), { ssr: false });
-const FeaturesSection = dynamic(() => import("@/sections/home/FeaturesSection"), { ssr: false });
-const TechStackSection = dynamic(() => import("@/sections/home/TechStackSection"), { ssr: false });
-const WhyChooseUs = dynamic(() => import("@/sections/home/WhyChooseUs"), { ssr: false });
-const CygmaPreviewSection = dynamic(() => import("@/sections/home/CygmaPreviewSection"), { ssr: false });
-const InnovationTimeline = dynamic(() => import("@/sections/home/InnovationTimeline"), { ssr: false });
-const StatsSection = dynamic(() => import("@/sections/home/StatsSection"), { ssr: false });
-const TestimonialsSection = dynamic(() => import("@/sections/home/TestimonialsSection"), { ssr: false });
-const CTABanner = dynamic(() => import("@/sections/home/CTABanner"), { ssr: false });
+import WhoWeAre from "@/sections/home/WhoWeAre";
+import OurVision from "@/sections/home/OurVision";
+import FeaturesSection from "@/sections/home/FeaturesSection";
+import TechStackSection from "@/sections/home/TechStackSection";
+import WhyChooseUs from "@/sections/home/WhyChooseUs";
+import CygmaPreviewSection from "@/sections/home/CygmaPreviewSection";
+import InnovationTimeline from "@/sections/home/InnovationTimeline";
+import StatsSection from "@/sections/home/StatsSection";
+import TestimonialsSection from "@/sections/home/TestimonialsSection";
+import CTABanner from "@/sections/home/CTABanner";
 
 /**
  * HomePage: Main landing entry compiling 12 Liquid Glass sections.
