@@ -13,6 +13,8 @@ import { useAuthRedirect } from "@/lib/authRedirect";
 import { useTheme, ThemeMode } from "./layout/ThemeContext";
 import { useCygmaWorld, CygmaView } from "@/context/CygmaWorldContext";
 import { usePWA } from "@/hooks/usePWA";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import MobileNavbar from "./mobile/MobileNavbar";
 
 const NAV_LINKS = [
   { href: "/", label: "Home" },
@@ -34,6 +36,7 @@ export default function Navbar() {
   const { theme, setTheme } = useTheme();
   const { navbarVisible, setNavbarVisible, setView, setIsTransitioning } = useCygmaWorld();
   const { isInstallable, installApp } = usePWA();
+  const isMobile = useMediaQuery("(max-width: 767px)");
   
   const [mounted, setMounted] = useState(false);
 
@@ -173,6 +176,22 @@ export default function Navbar() {
         return <Sparkles className="w-4 h-4 text-blue-500" />;
     }
   };
+
+  if (isMobile) {
+    return (
+      <MobileNavbar
+        user={user}
+        handleLinkClick={handleLinkClick}
+        handleLogout={handleLogout}
+        cycleTheme={cycleTheme}
+        renderThemeIcon={renderThemeIcon}
+        theme={theme}
+        mounted={mounted}
+        isAdminUser={user ? isAdmin(user.email) : false}
+        navbarVisible={navbarVisible}
+      />
+    );
+  }
 
   return (
     <div className="fixed top-0 inset-x-0 z-50 flex justify-center px-4 pt-4 fixed-nav-safe-area pointer-events-none">

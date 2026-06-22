@@ -10,6 +10,8 @@ const Sidebar = dynamic(() => import("@/components/ai/Sidebar"), { ssr: false })
 const ChatArea = dynamic(() => import("@/components/ai/ChatArea"), { ssr: false });
 const ContextPanel = dynamic(() => import("@/components/ai/ContextPanel"), { ssr: false });
 const AIScene = dynamic(() => import("@/components/ai/AIScene"), { ssr: false });
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import MobileCygmaAI from "@/components/mobile/MobileCygmaAI";
 
 interface Message {
   id: string;
@@ -32,6 +34,7 @@ export default function AIPage() {
   // Collapsible panels states
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
   const [isContextOpen, setIsContextOpen] = useState(true);
+  const isMobile = useMediaQuery("(max-width: 767px)");
   
   const abortControllerRef = useRef<AbortController | null>(null);
   const supabase = createClient();
@@ -231,6 +234,33 @@ export default function AIPage() {
     setCurrentConvId(null);
     setMessages([]);
   };
+
+  if (isMobile) {
+    return (
+      <>
+        <AIScene />
+        <MobileCygmaAI
+          user={user}
+          currentConvId={currentConvId}
+          setCurrentConvId={setCurrentConvId}
+          selectedModel={selectedModel}
+          setSelectedModel={setSelectedModel}
+          messages={messages}
+          setMessages={setMessages}
+          streamingText={streamingText}
+          isStreaming={isStreaming}
+          onSendMessage={handleSendMessage}
+          onStopGeneration={handleStopGeneration}
+          onNewChat={handleNewChat}
+          files={files}
+          setFiles={setFiles}
+          activeContext={activeContext}
+          setActiveContext={setActiveContext}
+          isAuthenticated={!!user}
+        />
+      </>
+    );
+  }
 
   return (
     <div className="flex w-full h-[calc(100vh-4rem)] overflow-hidden bg-transparent relative animate-in fade-in duration-300">

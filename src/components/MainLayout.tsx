@@ -35,7 +35,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   const mainRoutes = ["/", "/about", "/projects", "/products", "/ai", "/login", "/careers", "/contact", "/dashboard", "/admin"];
   const showCanvas = mainRoutes.includes(pathname);
   const isPerformanceLow = currentProfile === "low" || currentProfile === "battery";
-  const shouldRenderCanvas = showCanvas && !isMobileDevice && !isPerformanceLow;
+  const shouldRenderCanvas = showCanvas && !isPerformanceLow;
 
   // Detect mobile viewport on mount
   useEffect(() => {

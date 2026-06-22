@@ -3,6 +3,8 @@
 import React, { useRef, useState } from "react";
 import { motion, useScroll } from "framer-motion";
 import { FadeUp } from "@/components/Animate";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import MobileTimeline from "@/components/mobile/MobileTimeline";
 
 interface Milestone {
   phase: string;
@@ -60,6 +62,7 @@ const MILESTONES: Milestone[] = [
 export default function InnovationTimeline() {
   const containerRef = useRef<HTMLDivElement>(null);
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null);
+  const isMobile = useMediaQuery("(max-width: 767px)");
   
   // Track scroll inside container
   const { scrollYProgress } = useScroll({
@@ -89,126 +92,128 @@ export default function InnovationTimeline() {
           </FadeUp>
         </div>
 
-        {/* Timeline Path */}
-        <div className="relative">
-          {/* Vertical line background */}
-          <div className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-0 bottom-0 w-[2px] bg-slate-200/20" />
-          
-          {/* Animated fill line */}
-          <motion.div 
-            className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-0 w-[2px] bg-gradient-to-b from-[#1E6BD6] via-[#FF7A00] to-[#FFC400] origin-top h-full"
-            style={{ scaleY: scrollYProgress }}
-          />
+        {isMobile ? (
+          <MobileTimeline milestones={MILESTONES} />
+        ) : (
+          <div className="relative">
+            {/* Vertical line background */}
+            <div className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-0 bottom-0 w-[2px] bg-slate-200/20" />
+            
+            {/* Animated fill line */}
+            <motion.div 
+              className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-0 w-[2px] bg-gradient-to-b from-[#1E6BD6] via-[#FF7A00] to-[#FFC400] origin-top h-full"
+              style={{ scaleY: scrollYProgress }}
+            />
 
-          <div className="space-y-12">
-            {MILESTONES.map((item, index) => {
-              const isEven = index % 2 === 0;
-              const isExpanded = expandedIndex === index;
+            <div className="space-y-12">
+              {MILESTONES.map((item, index) => {
+                const isEven = index % 2 === 0;
+                const isExpanded = expandedIndex === index;
 
-              return (
-                <div key={item.title} className="flex flex-col sm:flex-row relative">
-                  
-                  {/* Timeline Circle Node */}
-                  <div className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-1.5 w-4 h-4 rounded-full bg-[var(--bg-gradient)] border-2 border-[var(--accent-color)] z-10 shadow-md transition-colors" />
+                return (
+                  <div key={item.title} className="flex flex-col sm:flex-row relative">
+                    
+                    {/* Timeline Circle Node */}
+                    <div className="absolute left-4 sm:left-1/2 -translate-x-1/2 top-1.5 w-4 h-4 rounded-full bg-[var(--bg-gradient)] border-2 border-[var(--accent-color)] z-10 shadow-md transition-colors" />
 
-                   {/* Left Side Content (Desktop) */}
-                  <div className="pl-10 sm:pl-0 sm:w-1/2 flex sm:justify-end sm:order-1">
-                    {!isEven && (
-                      <div className="hidden sm:block text-right pr-12 pt-1.5 select-none">
-                        <span className="text-xs font-bold text-[var(--text-secondary)]">{item.date}</span>
-                      </div>
-                    )}
-                    {isEven && (
-                      <FadeUp delay={0.05} className="w-full sm:max-w-md sm:pr-12 text-left sm:text-right">
-                        <div 
-                          onClick={() => toggleExpand(index)}
-                          className={`p-6 rounded-3xl bg-[var(--glass-bg)] border transition-all duration-300 shadow-sm cursor-pointer select-none hover:scale-[1.01] ${
-                            isExpanded ? "border-[var(--accent-color)]/40 shadow-md" : "border-[var(--glass-border)] hover:border-[var(--accent-color)]/20"
-                          }`}
-                        >
-                          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-color)]">
-                            {item.phase} <span className="sm:hidden">• {item.date}</span>
-                          </span>
-                          <h3 className="font-display font-black text-lg text-[var(--text-primary)] mt-1 mb-2">
-                            {item.title}
-                          </h3>
-                          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                            {item.desc}
-                          </p>
-
-                          {/* Expanded Details section */}
-                          <motion.div
-                            initial={false}
-                            animate={{ height: isExpanded ? "auto" : 0, opacity: isExpanded ? 1 : 0 }}
-                            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                            className="overflow-hidden text-left"
-                          >
-                            <div className="mt-3.5 text-[11px] text-[var(--text-secondary)] border-t border-[var(--glass-border)] pt-3.5 leading-relaxed font-semibold">
-                              {item.details}
-                            </div>
-                          </motion.div>
-
-                          <div className="flex justify-between items-center mt-4 text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]/50 border-t border-[var(--glass-border)]/50 pt-2.5">
-                            <span>{isExpanded ? "Click to collapse" : "Click to view details"}</span>
-                            <span className="font-bold text-sm leading-none">{isExpanded ? "−" : "+"}</span>
-                          </div>
+                     {/* Left Side Content (Desktop) */}
+                    <div className="pl-10 sm:pl-0 sm:w-1/2 flex sm:justify-end sm:order-1">
+                      {!isEven && (
+                        <div className="hidden sm:block text-right pr-12 pt-1.5 select-none">
+                          <span className="text-xs font-bold text-[var(--text-secondary)]">{item.date}</span>
                         </div>
-                      </FadeUp>
-                    )}
-                  </div>
-
-                  {/* Right Side Content (Desktop) */}
-                  <div className="pl-10 sm:pl-0 sm:w-1/2 sm:order-2">
-                    {isEven && (
-                      <div className="hidden sm:block pl-12 pt-1.5 select-none">
-                        <span className="text-xs font-bold text-[var(--text-secondary)]">{item.date}</span>
-                      </div>
-                    )}
-                    {!isEven && (
-                      <FadeUp delay={0.05} className="w-full sm:max-w-md sm:pl-12 text-left">
-                        <div 
-                          onClick={() => toggleExpand(index)}
-                          className={`p-6 rounded-3xl bg-[var(--glass-bg)] border transition-all duration-300 shadow-sm cursor-pointer select-none hover:scale-[1.01] ${
-                            isExpanded ? "border-[var(--accent-color)]/40 shadow-md" : "border-[var(--glass-border)] hover:border-[var(--accent-color)]/20"
-                          }`}
-                        >
-                          <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-color)]">
-                            {item.phase} <span className="sm:hidden">• {item.date}</span>
-                          </span>
-                          <h3 className="font-display font-black text-lg text-[var(--text-primary)] mt-1 mb-2">
-                            {item.title}
-                          </h3>
-                          <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                            {item.desc}
-                          </p>
-
-                          {/* Expanded Details section */}
-                          <motion.div
-                            initial={false}
-                            animate={{ height: isExpanded ? "auto" : 0, opacity: isExpanded ? 1 : 0 }}
-                            transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
-                            className="overflow-hidden text-left"
+                      )}
+                      {isEven && (
+                        <FadeUp delay={0.05} className="w-full sm:max-w-md sm:pr-12 text-left sm:text-right">
+                          <div 
+                            onClick={() => toggleExpand(index)}
+                            className={`p-6 rounded-3xl bg-[var(--glass-bg)] border transition-all duration-300 shadow-sm cursor-pointer select-none hover:scale-[1.01] ${
+                              isExpanded ? "border-[var(--accent-color)]/40 shadow-md" : "border-[var(--glass-border)] hover:border-[var(--accent-color)]/20"
+                            }`}
                           >
-                            <div className="mt-3.5 text-[11px] text-[var(--text-secondary)] border-t border-[var(--glass-border)] pt-3.5 leading-relaxed font-semibold">
-                              {item.details}
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-color)]">
+                              {item.phase} <span className="sm:hidden">• {item.date}</span>
+                            </span>
+                            <h3 className="font-display font-black text-lg text-[var(--text-primary)] mt-1 mb-2">
+                              {item.title}
+                            </h3>
+                            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                              {item.desc}
+                            </p>
+
+                            {/* Expanded Details section */}
+                            <motion.div
+                              initial={false}
+                              animate={{ height: isExpanded ? "auto" : 0, opacity: isExpanded ? 1 : 0 }}
+                              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                              className="overflow-hidden text-left"
+                            >
+                              <div className="mt-3.5 text-[11px] text-[var(--text-secondary)] border-t border-[var(--glass-border)] pt-3.5 leading-relaxed font-semibold">
+                                {item.details}
+                              </div>
+                            </motion.div>
+
+                            <div className="flex justify-between items-center mt-4 text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]/50 border-t border-[var(--glass-border)]/50 pt-2.5">
+                              <span>{isExpanded ? "Click to collapse" : "Click to view details"}</span>
+                              <span className="font-bold text-sm leading-none">{isExpanded ? "−" : "+"}</span>
                             </div>
-                          </motion.div>
-
-                          <div className="flex justify-between items-center mt-4 text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]/50 border-t border-[var(--glass-border)]/50 pt-2.5">
-                            <span>{isExpanded ? "Click to collapse" : "Click to view details"}</span>
-                            <span className="font-bold text-sm leading-none">{isExpanded ? "−" : "+"}</span>
                           </div>
-                        </div>
-                      </FadeUp>
-                    )}
-                  </div>
+                        </FadeUp>
+                      )}
+                    </div>
 
-                </div>
-              );
-            })}
+                     {/* Right Side Content (Desktop) */}
+                    <div className="pl-10 sm:pl-0 sm:w-1/2 flex sm:justify-start sm:order-2">
+                      {isEven && (
+                        <div className="hidden sm:block text-left pl-12 pt-1.5 select-none">
+                          <span className="text-xs font-bold text-[var(--text-secondary)]">{item.date}</span>
+                        </div>
+                      )}
+                      {!isEven && (
+                        <FadeUp delay={0.05} className="w-full sm:max-w-md sm:pl-12 text-left">
+                          <div 
+                            onClick={() => toggleExpand(index)}
+                            className={`p-6 rounded-3xl bg-[var(--glass-bg)] border transition-all duration-300 shadow-sm cursor-pointer select-none hover:scale-[1.01] ${
+                              isExpanded ? "border-[var(--accent-color)]/40 shadow-md" : "border-[var(--glass-border)] hover:border-[var(--accent-color)]/20"
+                            }`}
+                          >
+                            <span className="text-[10px] font-black uppercase tracking-widest text-[var(--accent-color)]">
+                              {item.phase} <span className="sm:hidden">• {item.date}</span>
+                            </span>
+                            <h3 className="font-display font-black text-lg text-[var(--text-primary)] mt-1 mb-2">
+                              {item.title}
+                            </h3>
+                            <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
+                              {item.desc}
+                            </p>
+
+                            {/* Expanded Details section */}
+                            <motion.div
+                              initial={false}
+                              animate={{ height: isExpanded ? "auto" : 0, opacity: isExpanded ? 1 : 0 }}
+                              transition={{ duration: 0.35, ease: [0.16, 1, 0.3, 1] }}
+                              className="overflow-hidden text-left"
+                            >
+                              <div className="mt-3.5 text-[11px] text-[var(--text-secondary)] border-t border-[var(--glass-border)] pt-3.5 leading-relaxed font-semibold">
+                                {item.details}
+                              </div>
+                            </motion.div>
+
+                            <div className="flex justify-between items-center mt-4 text-[8px] font-black uppercase tracking-widest text-[var(--text-secondary)]/50 border-t border-[var(--glass-border)]/50 pt-2.5">
+                              <span>{isExpanded ? "Click to collapse" : "Click to view details"}</span>
+                              <span className="font-bold text-sm leading-none">{isExpanded ? "−" : "+"}</span>
+                            </div>
+                          </div>
+                        </FadeUp>
+                      )}
+                    </div>
+
+                  </div>
+                );
+              })}
+            </div>
           </div>
-        </div>
-
+        )}
       </div>
     </section>
   );

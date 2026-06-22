@@ -11,6 +11,8 @@ const easeOutExpo = [0.16, 1, 0.3, 1] as const;
 const easeOutQuart = [0.25, 1, 0.5, 1] as const;
 
 import HeroScene from "@/components/hero/HeroScene";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import MobileHero from "@/components/mobile/MobileHero";
 
 
 // Particles mapping coordinates (Converge to circular ring of radius 24px and inner V shape)
@@ -109,6 +111,15 @@ export default function HeroSection() {
       if (scrollTimer) clearTimeout(scrollTimer);
     };
   }, []);
+
+  if (isMobile) {
+    return (
+      <>
+        <HeroScene />
+        <MobileHero />
+      </>
+    );
+  }
 
   return (
     <section

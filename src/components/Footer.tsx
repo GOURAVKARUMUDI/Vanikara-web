@@ -4,10 +4,17 @@ import Link from "next/link";
 import Image from "next/image";
 import { Mail, Linkedin, Github } from "lucide-react";
 import { useConsent } from "@/context/ConsentContext";
+import { useMediaQuery } from "@/hooks/useMediaQuery";
+import MobileFooter from "./mobile/MobileFooter";
 
 export default function Footer() {
   const year = new Date().getFullYear();
   const { openPreferences } = useConsent();
+  const isMobile = useMediaQuery("(max-width: 767px)");
+
+  if (isMobile) {
+    return <MobileFooter year={year} openPreferences={openPreferences} />;
+  }
 
   return (
     <footer className="pt-20 pb-10 border-t border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md transition-all duration-800">
