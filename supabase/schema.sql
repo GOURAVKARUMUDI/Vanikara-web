@@ -41,12 +41,22 @@ ALTER TABLE public.subscriptions ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.files ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.ai_logs ENABLE ROW LEVEL SECURITY;
 
+-- Function to check if user is admin bypassing RLS recursion
+CREATE OR REPLACE FUNCTION public.check_is_admin(user_id UUID)
+RETURNS BOOLEAN SECURITY DEFINER SET search_path = public AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.users WHERE id = user_id AND role = 'admin'
+  );
+END;
+$$ LANGUAGE plpgsql;
+
 -- Policies for users
 CREATE POLICY "Users can view their own profile" ON public.users FOR SELECT USING (auth.uid() = id);
 CREATE POLICY "Users can update their own profile" ON public.users FOR UPDATE USING (auth.uid() = id);
 CREATE POLICY "Users can insert their own profile" ON public.users FOR INSERT WITH CHECK (auth.uid() = id);
 CREATE POLICY "Admins can view all profiles" ON public.users FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+  public.check_is_admin(auth.uid())
 );
 
 -- Policies for subscriptions
@@ -67,7 +77,7 @@ CREATE POLICY "Admins can manage all files" ON public.files FOR ALL USING (
 CREATE POLICY "Users can view their own ai_logs" ON public.ai_logs FOR SELECT USING (auth.uid() = user_id);
 CREATE POLICY "Users can insert their own ai_logs" ON public.ai_logs FOR INSERT WITH CHECK (auth.uid() = user_id);
 CREATE POLICY "Admins can view all ai_logs" ON public.ai_logs FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+  public.check_is_admin(auth.uid())
 );
 
 -- Create privacy_config table
@@ -87,6 +97,22 @@ ALTER TABLE public.privacy_config ENABLE ROW LEVEL SECURITY;
 -- Policies for privacy_config
 CREATE POLICY "Public can select privacy_config" ON public.privacy_config FOR SELECT USING (true);
 CREATE POLICY "Admins can manage privacy_config" ON public.privacy_config FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+  public.check_is_admin(auth.uid())
 );
+
+-- Sync public.users role changes to auth.users raw_user_meta_data
+CREATE OR REPLACE FUNCTION public.sync_user_role()
+RETURNS TRIGGER AS $$
+BEGIN
+  UPDATE auth.users
+  SET raw_user_meta_data = 
+    coalesce(raw_user_meta_data, '{}'::jsonb) || jsonb_build_object('role', NEW.role)
+  WHERE id = NEW.id;
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE TRIGGER sync_user_role_trigger
+AFTER INSERT OR UPDATE OF role ON public.users
+FOR EACH ROW EXECUTE FUNCTION public.sync_user_role();
 

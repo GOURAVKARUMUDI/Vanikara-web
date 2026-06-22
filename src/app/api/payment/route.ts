@@ -1,6 +1,8 @@
 import { NextResponse } from "next/server";
 import Razorpay from "razorpay";
 import { supabaseService } from "@/utils/supabase/service";
+import { createClient } from "@/utils/supabase/server";
+import { cookies } from "next/headers";
 import crypto from "crypto";
 import { apiResponse, logError } from "@/lib/security";
 
@@ -13,16 +15,62 @@ const razorpay = new Razorpay({
 
 export async function POST(req) {
   try {
+    // 1. Authenticate user
+    const cookieStore = await cookies();
+    const sb = createClient(cookieStore);
+    const { data: { user } } = await sb.auth.getUser();
+
+    if (!user) {
+      return NextResponse.json(apiResponse(false, null, "Unauthorized"), { status: 401 });
+    }
+
     const body = await req.json();
-    const { amount, clientId, action } = body;
+    const { clientId, action } = body;
+
+    // Check if user is an admin
+    const { data: userData } = await sb.from("users").select("role").eq("id", user.id).single();
+    const isAdminUser = userData?.role === "admin";
 
     if (action === "create") {
-      if (!amount || !clientId) {
-        return NextResponse.json(apiResponse(false, null, "Missing payment details"), { status: 400 });
+      if (!clientId) {
+        return NextResponse.json(apiResponse(false, null, "Missing client ID"), { status: 400 });
       }
 
+      // Fetch client record to verify ownership and resolve package details
+      const { data: client, error: clientErr } = await supabaseService
+        .from("clients")
+        .select("email, package_id")
+        .eq("id", clientId)
+        .single();
+
+      if (clientErr || !client) {
+        return NextResponse.json(apiResponse(false, null, "Client record not found"), { status: 404 });
+      }
+
+      // Ensure user owns the client record OR is admin
+      if (client.email.toLowerCase().trim() !== user.email?.toLowerCase().trim() && !isAdminUser) {
+        return NextResponse.json(apiResponse(false, null, "Forbidden: Access denied"), { status: 403 });
+      }
+
+      if (!client.package_id) {
+        return NextResponse.json(apiResponse(false, null, "No package associated with client"), { status: 400 });
+      }
+
+      // Fetch the actual package price from the database
+      const { data: pkg, error: pkgErr } = await supabaseService
+        .from("packages")
+        .select("price")
+        .eq("id", client.package_id)
+        .single();
+
+      if (pkgErr || !pkg) {
+        return NextResponse.json(apiResponse(false, null, "Associated package not found"), { status: 404 });
+      }
+
+      const verifiedPrice = Number(pkg.price);
+
       const options = {
-        amount: Math.round(Number(amount) * 100),
+        amount: Math.round(verifiedPrice * 100),
         currency: "INR",
         receipt: `receipt_${Date.now()}_${clientId.slice(0, 8)}`,
       };
@@ -31,8 +79,8 @@ export async function POST(req) {
 
       await supabaseService.from("payments").insert([{
         client_id: clientId,
-        amount: Number(amount),
-        status: 'pending',
+        amount: verifiedPrice,
+        status: "pending",
         razorpay_order_id: order.id
       }]);
 
@@ -46,6 +94,7 @@ export async function POST(req) {
         return NextResponse.json(apiResponse(false, null, "Missing verification data"), { status: 400 });
       }
 
+      // Verify the payment signature
       const hmacBody = razorpay_order_id + "|" + razorpay_payment_id;
       const expectedSignature = crypto
         .createHmac("sha256", process.env.RAZORPAY_KEY_SECRET!)

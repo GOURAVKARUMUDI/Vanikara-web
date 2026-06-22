@@ -65,7 +65,7 @@ CREATE POLICY "Users can manage their own conversations" ON public.conversations
 
 CREATE POLICY "Admins can view all conversations" ON public.conversations
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+    public.check_is_admin(auth.uid())
   );
 
 -- Messages RLS Policies
@@ -87,7 +87,7 @@ CREATE POLICY "Everyone can select prompts" ON public.prompts
 
 CREATE POLICY "Admins can manage prompts" ON public.prompts
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+    public.check_is_admin(auth.uid())
   );
 
 -- Agents RLS Policies (Publicly viewable, editable by admins)
@@ -96,5 +96,5 @@ CREATE POLICY "Everyone can select agents" ON public.agents
 
 CREATE POLICY "Admins can manage agents" ON public.agents
   FOR ALL USING (
-    EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+    public.check_is_admin(auth.uid())
   );

@@ -22,7 +22,7 @@ export async function POST(req: Request) {
   try {
     // 0. Rate Limiting Check
     const ip = req.headers.get("x-forwarded-for") || req.headers.get("x-real-ip") || "127.0.0.1";
-    const limitCheck = isRateLimited(ip);
+    const limitCheck = await isRateLimited(ip);
     if (limitCheck.limited) {
       return NextResponse.json(
         apiResponse(false, null, "Too many requests. Please wait a minute before querying CYGMA again."),

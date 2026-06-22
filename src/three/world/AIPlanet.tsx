@@ -84,6 +84,8 @@ export default function AIPlanet() {
     return [pos];
   }, [innerParticleCount]);
 
+  const throttleClock = useRef(0);
+
   useFrame((state, delta) => {
     // 1. Keep fully hidden and locked until scene graph compiles
     if (!sceneReady) {
@@ -94,13 +96,20 @@ export default function AIPlanet() {
       return;
     }
 
+    const targetFps = config.targetFps || 60;
+    const fpsLimit = 1 / targetFps;
+    throttleClock.current += delta;
+    if (throttleClock.current < fpsLimit) return;
+    const throttledDelta = throttleClock.current;
+    throttleClock.current = throttleClock.current % fpsLimit;
+
     // Advance reveal progress (over 3.0s total, fading in over first 1.5s)
     if (revealProgress.current < 3.0) {
-      revealProgress.current = Math.min(3.0, revealProgress.current + delta);
+      revealProgress.current = Math.min(3.0, revealProgress.current + throttledDelta);
     }
+
     const timeSinceReady = revealProgress.current;
     const revealOpacity = Math.min(1.0, timeSinceReady / 1.5);
-
     const time = state.clock.getElapsedTime();
 
     // Easing the scale from 0 to 1 over the 1.5s reveal
@@ -111,7 +120,7 @@ export default function AIPlanet() {
 
     // Shrink scale to fade planet out during camera success pass-through
     if (view === "success") {
-      scale = THREE.MathUtils.lerp(scale, 0, 0.035 * Math.min(3.0, delta / 0.0166));
+      scale = THREE.MathUtils.lerp(scale, 0, 0.035 * Math.min(3.0, throttledDelta / 0.0166));
     }
 
     if (coreRef.current) {

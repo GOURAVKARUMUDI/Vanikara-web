@@ -12,7 +12,6 @@ export async function POST(req: Request) {
   try {
     const body = await req.json();
     const { name, email, phone, position, portfolio, coverLetter, resumeBase64, resumeFileName } = body;
-
     // 1. Validation
     if (!name || !email || !phone || !position || !resumeBase64 || !resumeFileName) {
       return NextResponse.json(apiResponse(false, null, "Missing required fields"), { status: 400 });
@@ -20,6 +19,13 @@ export async function POST(req: Request) {
 
     if (!isValidEmail(email)) {
       return NextResponse.json(apiResponse(false, null, "Invalid email format"), { status: 400 });
+    }
+
+    // Ensure size does not exceed 5MB
+    const approxSizeInBytes = (resumeBase64.length * 3) / 4;
+    const MAX_SIZE = 5 * 1024 * 1024; // 5MB
+    if (approxSizeInBytes > MAX_SIZE) {
+      return NextResponse.json(apiResponse(false, null, "Resume file size exceeds the 5MB limit"), { status: 413 });
     }
 
     // 2. Sanitization
@@ -41,39 +47,40 @@ export async function POST(req: Request) {
       }
 
       const fileBuffer = Buffer.from(base64CleanData, "base64");
+
+      // Validate Magic Bytes for PDF and DOCX/DOC
+      // PDF: Starts with %PDF (25 50 44 46)
+      // ZIP/DOCX: Starts with PK (50 4B 03 04)
+      const isPDF = fileBuffer.length > 4 && fileBuffer[0] === 0x25 && fileBuffer[1] === 0x50 && fileBuffer[2] === 0x44 && fileBuffer[3] === 0x46;
+      const isDOCX = fileBuffer.length > 4 && fileBuffer[0] === 0x50 && fileBuffer[1] === 0x4b && fileBuffer[2] === 0x03 && fileBuffer[3] === 0x04;
+
+      if (!isPDF && !isDOCX) {
+        return NextResponse.json(apiResponse(false, null, "Invalid file format. Only PDF and DOCX documents are allowed."), { status: 400 });
+      }
+
       const uniqueFileName = `${Date.now()}_${resumeFileName.replace(/[^a-zA-Z0-9.\-_]/g, "_")}`;
 
-      try {
-        const { data: uploadData, error: uploadError } = await supabaseService.storage
-          .from("resumes")
-          .upload(uniqueFileName, fileBuffer, {
-            contentType: matches ? matches[1] : "application/pdf",
-            upsert: false
-          });
+      const { data: uploadData, error: uploadError } = await supabaseService.storage
+        .from("resumes")
+        .upload(uniqueFileName, fileBuffer, {
+          contentType: isPDF ? "application/pdf" : "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+          upsert: false
+        });
 
-        if (uploadError) throw uploadError;
-
-        const { data: urlData } = supabaseService.storage.from("resumes").getPublicUrl(uniqueFileName);
-        if (urlData && urlData.publicUrl) {
-          resumeUrl = urlData.publicUrl;
-        }
-      } catch (storageErr: any) {
-        console.warn("Supabase Storage resume upload failed, falling back to file system. Error:", storageErr.message || storageErr);
-        
-        const uploadDir = path.join(process.cwd(), "public", "uploads", "resumes");
-        if (!fs.existsSync(uploadDir)) {
-          fs.mkdirSync(uploadDir, { recursive: true });
-        }
-
-        fs.writeFileSync(path.join(uploadDir, uniqueFileName), fileBuffer);
-        resumeUrl = `/uploads/resumes/${uniqueFileName}`;
+      if (uploadError) {
+        logError("Careers Storage Upload Failed", uploadError.message);
+        return NextResponse.json(apiResponse(false, null, "Failed to upload resume to secure storage"), { status: 500 });
       }
+
+      const { data: urlData } = supabaseService.storage.from("resumes").getPublicUrl(uniqueFileName);
+      if (!urlData || !urlData.publicUrl) {
+        return NextResponse.json(apiResponse(false, null, "Failed to retrieve public link for uploaded resume"), { status: 500 });
+      }
+      resumeUrl = urlData.publicUrl;
     } catch (fileErr) {
       logError("Resume File Process", fileErr);
-      resumeUrl = `https://storage.vanikara.com/resumes/${Date.now()}_${encodeURIComponent(resumeFileName)}`;
-    }
-
-    // Format compound cover letter with portfolio/phone to fit CRM schema fields
+      return NextResponse.json(apiResponse(false, null, "Error processing resume document"), { status: 500 });
+    }    // Format compound cover letter with portfolio/phone to fit CRM schema fields
     const compoundCover = `Phone: ${sPhone}\nPortfolio/LinkedIn: ${sPortfolio}\n\nCover Letter / Statement:\n${sCover}`;
 
     // 4. Persist Candidate Record to Careers Database

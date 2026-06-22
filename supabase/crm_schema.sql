@@ -65,15 +65,15 @@ alter table public.packages enable row level security;
 
 -- Policies for CRM Tables
 CREATE POLICY "Admins can manage leads" ON public.leads FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+  public.check_is_admin(auth.uid())
 );
 CREATE POLICY "Admins can manage clients" ON public.clients FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+  public.check_is_admin(auth.uid())
 );
 CREATE POLICY "Admins can manage payments" ON public.payments FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+  public.check_is_admin(auth.uid())
 );
 CREATE POLICY "Everyone can view packages" ON public.packages FOR SELECT USING (true);
 CREATE POLICY "Admins can manage packages" ON public.packages FOR ALL USING (
-  EXISTS (SELECT 1 FROM public.users WHERE id = auth.uid() AND role = 'admin')
+  public.check_is_admin(auth.uid())
 );

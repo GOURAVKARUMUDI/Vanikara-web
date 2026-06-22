@@ -9,9 +9,54 @@ const MAX_REQUESTS = 30; // 30 requests per minute
 
 /**
  * Checks if a specific client IP exceeds the rate limits.
- * Returns information about the limit check.
+ * Integrates Upstash Redis (if configured) with local in-memory fallback.
  */
-export function isRateLimited(ip: string): { limited: boolean; remaining: number; reset: number } {
+export async function isRateLimited(ip: string): Promise<{ limited: boolean; remaining: number; reset: number }> {
+  const url = process.env.UPSTASH_REDIS_REST_URL;
+  const token = process.env.UPSTASH_REDIS_REST_TOKEN;
+
+  if (url && token) {
+    try {
+      const key = `ratelimit:${ip}`;
+      // Execute INCR using Upstash REST API
+      const res = await fetch(`${url}/incr/${key}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      
+      if (res.ok) {
+        const { result: count } = await res.json();
+        
+        if (count === 1) {
+          // Set expiry to 60 seconds on initial increment
+          await fetch(`${url}/expire/${key}/60`, {
+            headers: { Authorization: `Bearer ${token}` }
+          });
+        }
+
+        let ttl = 60;
+        const ttlRes = await fetch(`${url}/ttl/${key}`, {
+          headers: { Authorization: `Bearer ${token}` }
+        });
+        if (ttlRes.ok) {
+          const ttlData = await ttlRes.json();
+          if (typeof ttlData.result === "number" && ttlData.result > 0) {
+            ttl = ttlData.result;
+          }
+        }
+
+        const remaining = Math.max(0, MAX_REQUESTS - count);
+        return {
+          limited: count > MAX_REQUESTS,
+          remaining,
+          reset: Date.now() + (ttl * 1000)
+        };
+      }
+    } catch (err) {
+      console.warn("Upstash Redis connection failed, falling back to local memory rate limiter:", err);
+    }
+  }
+
+  // Fallback: Local in-memory sliding window rate limiting
   const now = Date.now();
   if (!ipCache.has(ip)) {
     ipCache.set(ip, { timestamps: [now] });

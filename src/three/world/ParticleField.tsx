@@ -69,6 +69,8 @@ export default function ParticleField({ count = 650 }) {
     return [pos, spd];
   }, [count]);
 
+  const throttleClock = useRef(0);
+
   useFrame((state, delta) => {
     if (!pointsRef.current) return;
 
@@ -80,14 +82,21 @@ export default function ParticleField({ count = 650 }) {
       return;
     }
 
+    const targetFps = config.targetFps || 60;
+    const fpsLimit = 1 / targetFps;
+    throttleClock.current += delta;
+    if (throttleClock.current < fpsLimit) return;
+    const throttledDelta = throttleClock.current;
+    throttleClock.current = throttleClock.current % fpsLimit;
+
     if (revealProgress.current < 3.0) {
-      revealProgress.current = Math.min(3.0, revealProgress.current + delta);
+      revealProgress.current = Math.min(3.0, revealProgress.current + throttledDelta);
     }
     const timeSinceReady = revealProgress.current;
     const revealOpacity = Math.min(1.0, timeSinceReady / 1.5);
 
     if (timeSinceReady >= 1.5 && interactedRef.current) {
-      activeTimeRef.current += delta;
+      activeTimeRef.current += throttledDelta;
     }
     const activeTime = activeTimeRef.current;
 
