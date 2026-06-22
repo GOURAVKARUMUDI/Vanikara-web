@@ -4,6 +4,18 @@ import { NextResponse } from 'next/server';
 import { createClient } from '@/utils/supabase/server';
 import { cookies } from 'next/headers';
 import { logError } from '@/lib/security';
+import { isRateLimited } from '@/lib/rateLimit';
+
+const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+const ALLOWED_MIME_TYPES = [
+  'application/pdf',
+  'text/plain',
+  'text/markdown',
+  'application/json',
+  'text/csv',
+  'image/png',
+  'image/jpeg'
+];
 
 export async function POST(req: Request) {
   try {
@@ -16,11 +28,26 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: "Unauthorized access. Please log in." }, { status: 401 });
     }
 
+    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const rateLimit = await isRateLimited(ip);
+    
+    if (rateLimit.limited) {
+      return NextResponse.json({ error: "Too many requests. Please try again later." }, { status: 429 });
+    }
+
     const formData = await req.formData();
     const file = formData.get('file') as File;
 
     if (!file) {
       return NextResponse.json({ error: "No file was attached." }, { status: 400 });
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      return NextResponse.json({ error: "File exceeds the 5MB size limit." }, { status: 413 });
+    }
+
+    if (!ALLOWED_MIME_TYPES.includes(file.type)) {
+      return NextResponse.json({ error: "Invalid file type. Only PDF, text, JSON, CSV, and common images are allowed." }, { status: 415 });
     }
 
     // Read file buffer

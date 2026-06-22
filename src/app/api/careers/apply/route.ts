@@ -5,21 +5,40 @@ import { supabaseService } from "@/utils/supabase/service";
 import nodemailer from "nodemailer";
 import fs from "fs";
 import path from "path";
-import { sanitize, isValidEmail, apiResponse, logError } from "@/lib/security";
+import { sanitize, apiResponse, logError } from "@/lib/security";
 import { submitToGoogleForm } from "@/lib/googleForms";
+import { isRateLimited } from "@/lib/rateLimit";
+import { z } from "zod";
+
+const careersSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  email: z.string().email("Invalid email format"),
+  phone: z.string().min(1, "Phone is required").max(30),
+  position: z.string().min(1, "Position is required").max(100),
+  portfolio: z.string().max(200).optional(),
+  coverLetter: z.string().max(5000).optional(),
+  resumeBase64: z.string().min(1, "Resume is required"),
+  resumeFileName: z.string().min(1, "Resume file name is required")
+});
 
 export async function POST(req: Request) {
   try {
-    const body = await req.json();
-    const { name, email, phone, position, portfolio, coverLetter, resumeBase64, resumeFileName } = body;
-    // 1. Validation
-    if (!name || !email || !phone || !position || !resumeBase64 || !resumeFileName) {
-      return NextResponse.json(apiResponse(false, null, "Missing required fields"), { status: 400 });
+    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const rateLimit = await isRateLimited(ip);
+    
+    if (rateLimit.limited) {
+      return NextResponse.json(apiResponse(false, null, "Too many requests. Please try again later."), { status: 429 });
     }
 
-    if (!isValidEmail(email)) {
-      return NextResponse.json(apiResponse(false, null, "Invalid email format"), { status: 400 });
+    const body = await req.json();
+    const validation = careersSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(apiResponse(false, null, validation.error.issues[0].message), { status: 400 });
     }
+
+    const { name, email, phone, position, portfolio, coverLetter, resumeBase64, resumeFileName } = validation.data;
+    // 1. Validation has been performed by Zod
 
     // Ensure size does not exceed 5MB
     const approxSizeInBytes = (resumeBase64.length * 3) / 4;

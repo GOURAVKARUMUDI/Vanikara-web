@@ -7,12 +7,16 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { apiResponse, logError } from "@/lib/security";
 import { logAdminAction } from "@/lib/auditLogger";
+import { isRateLimited } from "@/lib/rateLimit";
 
 export async function GET() {
   try {
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
     const { data: { user } } = await supabase.auth.getUser();
+
+    // The req parameter is not present in GET, but we can't get IP easily without it or headers().
+    // We will extract headers from next/headers.
 
     if (!user || !isAdmin(user)) {
       return NextResponse.json(apiResponse(false, null, "Unauthorized"), { status: 401 });

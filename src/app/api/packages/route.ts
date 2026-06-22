@@ -7,6 +7,7 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import { apiResponse, logError, sanitize } from "@/lib/security";
 import { logAdminAction } from "@/lib/auditLogger";
+import { isRateLimited } from "@/lib/rateLimit";
 
 export async function GET() {
   try {
@@ -25,6 +26,12 @@ export async function GET() {
 
 export async function PATCH(req: Request) {
   try {
+    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const rateLimit = await isRateLimited(ip);
+    if (rateLimit.limited) {
+      return NextResponse.json(apiResponse(false, null, "Too many requests"), { status: 429 });
+    }
+
     const cookieStore = await cookies();
     const supabase = createClient(cookieStore);
     const { data: { user } } = await supabase.auth.getUser();

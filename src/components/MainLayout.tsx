@@ -85,16 +85,10 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     }
   }, []);
 
-  // Defer heavy Three.js hydration to unblock main thread and improve LCP
+  // Unblock reduced motion preference parsing
   useEffect(() => {
     if (typeof window === "undefined" || !shouldRenderCanvas) return;
-
     setReducedMotionState("user");
-    // Desktop high-perf: Mount canvas after a short delay (100ms) to allow page text to paint first
-    const timer = setTimeout(() => {
-      setDeferCanvas(true);
-    }, 100);
-    return () => clearTimeout(timer);
   }, [shouldRenderCanvas]);
 
   // Sync Success White Flash Timeline
@@ -122,7 +116,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         {/* Global 3D World Scene Backdrop */}
         {shouldRenderCanvas && (
           <>
-            {deferCanvas && <IntelligenceWorld />}
+            <IntelligenceWorld />
             <div 
               className={`fixed inset-0 z-0 bg-[#030712] transition-opacity duration-[1500ms] ease-in-out pointer-events-none ${
                 sceneReady ? "opacity-0" : "opacity-100"
@@ -133,7 +127,8 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
 
         {/* Dynamic UI Wrapper */}
         <motion.div
-          animate={{ opacity: 1 }}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: sceneReady ? 1 : 0 }}
           transition={{ duration: 0.8, ease: "easeInOut" }}
           className="flex flex-col min-h-screen bg-transparent relative w-full"
         >

@@ -16,12 +16,12 @@ import FogController from "./Fog";
 import Lighting from "./Lighting";
 import ThemeLighting from "./ThemeLighting";
 
-// Lazy-loaded massive procedural geometries to unblock main thread
-const ParticleField = lazy(() => import("./ParticleField"));
-const NeuralNetwork = lazy(() => import("./NeuralNetwork"));
-const EnergyRings = lazy(() => import("./EnergyRings"));
-const GlassObjects = lazy(() => import("./GlassObjects"));
-const AIPlanet = lazy(() => import("./AIPlanet"));
+// Massive procedural geometries statically imported for immediate initialization
+import ParticleField from "./ParticleField";
+import NeuralNetwork from "./NeuralNetwork";
+import EnergyRings from "./EnergyRings";
+import GlassObjects from "./GlassObjects";
+import AIPlanet from "./AIPlanet";
 
 /**
  * SceneInitializer: Compiles WebGL programs/shaders for all objects

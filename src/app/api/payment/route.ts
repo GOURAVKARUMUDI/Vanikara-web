@@ -5,6 +5,16 @@ import { createClient } from "@/utils/supabase/server";
 import { cookies } from "next/headers";
 import crypto from "crypto";
 import { apiResponse, logError } from "@/lib/security";
+import { isRateLimited } from "@/lib/rateLimit";
+import { z } from "zod";
+
+const paymentSchema = z.object({
+  action: z.enum(["create", "verify"]),
+  clientId: z.string().optional(),
+  razorpay_order_id: z.string().optional(),
+  razorpay_payment_id: z.string().optional(),
+  razorpay_signature: z.string().optional()
+});
 
 export const dynamic = "force-dynamic";
 
@@ -32,8 +42,21 @@ export async function POST(req: any) {
       return NextResponse.json(apiResponse(false, null, "Unauthorized"), { status: 401 });
     }
 
+    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const rateLimit = await isRateLimited(ip);
+    
+    if (rateLimit.limited) {
+      return NextResponse.json(apiResponse(false, null, "Too many requests. Please try again later."), { status: 429 });
+    }
+
     const body = await req.json();
-    const { clientId, action } = body;
+    const validation = paymentSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(apiResponse(false, null, "Invalid request payload"), { status: 400 });
+    }
+
+    const { clientId, action } = validation.data;
 
     // Check if user is an admin
     const { data: userData } = await sb.from("users").select("role").eq("id", user.id).single();
@@ -100,7 +123,7 @@ export async function POST(req: any) {
     } 
     
     if (action === "verify") {
-      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = body;
+      const { razorpay_order_id, razorpay_payment_id, razorpay_signature } = validation.data;
 
       if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
         return NextResponse.json(apiResponse(false, null, "Missing verification data"), { status: 400 });

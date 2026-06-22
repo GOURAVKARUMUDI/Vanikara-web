@@ -3,26 +3,42 @@ export const dynamic = "force-dynamic";
 import { NextResponse } from "next/server";
 import nodemailer from "nodemailer";
 import { supabaseService } from "@/utils/supabase/service";
-import { sanitize, isValidEmail, apiResponse, logError, logInfo, isBot } from "@/lib/security";
+import { sanitize, apiResponse, logError, logInfo, isBot } from "@/lib/security";
 import { submitToGoogleForm } from "@/lib/googleForms";
+import { isRateLimited } from "@/lib/rateLimit";
+import { z } from "zod";
+
+const contactSchema = z.object({
+  name: z.string().min(1, "Name is required").max(100),
+  email: z.string().email("Invalid email format"),
+  phone: z.string().max(30).optional(),
+  company: z.string().max(100).optional(),
+  subject: z.string().min(1, "Subject is required").max(200),
+  message: z.string().min(1, "Message is required").max(5000),
+  bot: z.string().optional()
+});
 
 export async function POST(req: Request) {
   try {
+    const ip = req.headers.get("x-forwarded-for") || "127.0.0.1";
+    const rateLimit = await isRateLimited(ip);
+    
+    if (rateLimit.limited) {
+      return NextResponse.json(apiResponse(false, null, "Too many requests. Please try again later."), { status: 429 });
+    }
+
     const body = await req.json();
-    const { name, email, phone, company, subject, message, bot } = body;
+    const validation = contactSchema.safeParse(body);
+
+    if (!validation.success) {
+      return NextResponse.json(apiResponse(false, null, validation.error.issues[0].message), { status: 400 });
+    }
+
+    const { name, email, phone, company, subject, message, bot } = validation.data;
 
     // 1. Spam protection (Honeypot)
     if (isBot(bot || "")) {
       return NextResponse.json(apiResponse(false, null, "Bot request rejected"), { status: 400 });
-    }
-
-    // 2. Server-side required validation
-    if (!name || !email || !subject || !message) {
-      return NextResponse.json(apiResponse(false, null, "Missing required fields"), { status: 400 });
-    }
-
-    if (!isValidEmail(email)) {
-      return NextResponse.json(apiResponse(false, null, "Invalid email format"), { status: 400 });
     }
 
     // 3. Clean and Sanitize Inputs
