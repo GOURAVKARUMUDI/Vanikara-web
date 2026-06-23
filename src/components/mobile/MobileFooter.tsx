@@ -66,11 +66,11 @@ export default function MobileFooter({ year, openPreferences }: MobileFooterProp
   ];
 
   return (
-    <footer className="pt-12 pb-6 border-t border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md md:hidden">
-      <div className="px-6 flex flex-col gap-8">
+    <footer className="pt-8 pb-4 border-t border-[var(--glass-border)] bg-[var(--glass-bg)] backdrop-blur-md md:hidden">
+      <div className="px-4 flex flex-col gap-6">
         
         {/* Brand Details */}
-        <div className="flex flex-col gap-3">
+        <div className="flex flex-col gap-2">
           <Link href="/" className="flex items-center gap-2 group self-start">
             <div className="w-8 h-8 rounded-lg flex items-center justify-center bg-white/10 border border-white/10 shadow-sm">
               <Image src="/logo.png" alt="Vanikara Logo" className="w-6 h-auto" width={24} height={24} />

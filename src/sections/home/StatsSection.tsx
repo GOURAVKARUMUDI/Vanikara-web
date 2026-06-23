@@ -71,51 +71,51 @@ export default function StatsSection() {
           </FadeUp>
         </div>
 
-        <StaggerGrid className="grid grid-cols-2 lg:grid-cols-4 gap-6">
+        <StaggerGrid className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-6">
           <StaggerItem>
             <Card hover className="h-full text-center">
-              <CardBody className="space-y-2">
+              <CardBody className="space-y-1 sm:space-y-2 p-3 sm:p-6">
                 <Counter end={2} />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                <h3 className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
                   Products Building
                 </h3>
-                <p className="text-[10px] text-slate-400">Vanik & FriskFree</p>
+                <p className="hidden sm:block text-[10px] text-slate-400">Vanik & FriskFree</p>
               </CardBody>
             </Card>
           </StaggerItem>
 
           <StaggerItem>
             <Card hover className="h-full text-center">
-              <CardBody className="space-y-2">
+              <CardBody className="space-y-1 sm:space-y-2 p-3 sm:p-6">
                 <Counter end={3} />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                <h3 className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
                   Founders
                 </h3>
-                <p className="text-[10px] text-slate-400">Charan, Gourav, Reddy</p>
+                <p className="hidden sm:block text-[10px] text-slate-400">Charan, Gourav, Reddy</p>
               </CardBody>
             </Card>
           </StaggerItem>
 
           <StaggerItem>
             <Card hover className="h-full text-center">
-              <CardBody className="space-y-2">
+              <CardBody className="space-y-1 sm:space-y-2 p-3 sm:p-6">
                 <Counter end={2026} />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                <h3 className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
                   Founded Year
                 </h3>
-                <p className="text-[10px] text-slate-400">Established March 9</p>
+                <p className="hidden sm:block text-[10px] text-slate-400">Established March 9</p>
               </CardBody>
             </Card>
           </StaggerItem>
 
           <StaggerItem>
             <Card hover className="h-full text-center">
-              <CardBody className="space-y-2">
+              <CardBody className="space-y-1 sm:space-y-2 p-3 sm:p-6">
                 <Counter end={6} suffix="+" />
-                <h3 className="text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
+                <h3 className="text-[10px] sm:text-xs font-bold uppercase tracking-wider text-[var(--text-secondary)]">
                   Team Members
                 </h3>
-                <p className="text-[10px] text-slate-400">Expanding engineers & reps</p>
+                <p className="hidden sm:block text-[10px] text-slate-400">Expanding engineers & reps</p>
               </CardBody>
             </Card>
           </StaggerItem>

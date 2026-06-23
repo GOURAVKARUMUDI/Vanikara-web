@@ -303,12 +303,12 @@ export default function NeuralNetwork({ nodeCount = 24 }) {
 
     // B. Apply organic pseudo-noise drift, global breathing, and layer-based cursor parallax
     allNodes.forEach((node, i) => {
-      const t = activeTime * node.speed * config.orbitSpeedMult;
+      const t = activeTime * node.speed * config.orbitSpeedMult * 0.5; // Slower orbital speed
 
-      // Coherent slow floating displacement
-      const dx = (Math.sin(t + node.phase) * 0.65 + Math.cos(t * 0.7 + node.phase * 2) * 0.35) * node.orbitRadius;
-      const dy = (Math.cos(t * 0.8 + node.phase) * 0.65 + Math.sin(t * 0.5 + node.phase * 3) * 0.35) * node.orbitRadius;
-      const dz = (Math.sin(t * 0.9 + node.phase * 1.5) * 0.65 + Math.cos(t * 0.4 + node.phase * 4) * 0.35) * node.orbitRadius;
+      // Coherent slow floating displacement (organic noise)
+      const dx = (Math.sin(t + node.phase) * 0.55 + Math.cos(t * 0.4 + node.phase * 2.3) * 0.45) * node.orbitRadius;
+      const dy = (Math.cos(t * 0.6 + node.phase) * 0.55 + Math.sin(t * 0.3 + node.phase * 1.7) * 0.45) * node.orbitRadius;
+      const dz = (Math.sin(t * 0.7 + node.phase * 1.5) * 0.55 + Math.cos(t * 0.5 + node.phase * 3.1) * 0.45) * node.orbitRadius;
 
       const currentPos = activeCoords[i];
       currentPos.set(

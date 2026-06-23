@@ -103,9 +103,15 @@ export default function ParticleField({ count = 650 }) {
     // Warp factors: speeds multiply dynamically on success
     const warpMult = view === "success" ? 15.0 : 1.0;
 
-    // Apply constant orbital rotation to the entire particle field
-    pointsRef.current.rotation.y = activeTime * 0.04 * warpMult * config.orbitSpeedMult;
-    pointsRef.current.rotation.x = activeTime * 0.012 * warpMult * config.orbitSpeedMult;
+    // Apply organic flow to the entire particle field
+    pointsRef.current.rotation.y = activeTime * 0.015 * warpMult * config.orbitSpeedMult;
+    pointsRef.current.rotation.x = activeTime * 0.005 * warpMult * config.orbitSpeedMult;
+    
+    // Subtle organic positional drift
+    const driftX = Math.sin(activeTime * 0.2) * 0.15;
+    const driftY = Math.cos(activeTime * 0.15) * 0.15;
+    pointsRef.current.position.x = driftX;
+    pointsRef.current.position.y = driftY;
 
     if (pointsRef.current.material && !Array.isArray(pointsRef.current.material)) {
       const baseOpacity = isDark ? 0.45 : 0.6;

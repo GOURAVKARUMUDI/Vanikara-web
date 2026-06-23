@@ -220,9 +220,9 @@ export default function CygmaPreviewSection() {
             </FadeUp>
 
             {/* Clickable suggested presets */}
-            <div className="space-y-3">
+            <div className="flex sm:block overflow-x-auto snap-x sm:snap-none pb-4 sm:pb-0 gap-3 sm:gap-0 sm:space-y-3 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar">
               {PRESET_PROMPTS.map((preset, index) => (
-                <FadeUp key={preset.label} delay={0.08 * (index + 1)}>
+                <FadeUp key={preset.label} delay={0.08 * (index + 1)} className="w-[85vw] sm:w-auto shrink-0 snap-center sm:snap-align-none">
                   <button
                     onClick={() => {
                       if (!isStreaming) {
@@ -231,18 +231,18 @@ export default function CygmaPreviewSection() {
                       }
                     }}
                     disabled={isStreaming}
-                    className="w-full p-4 text-left rounded-2xl bg-[var(--glass-bg)] border border-[var(--glass-border)] hover:border-[var(--accent-color)] text-xs cursor-pointer transition-all hover:scale-[1.01] shadow-sm flex items-center justify-between group disabled:opacity-50 disabled:pointer-events-none"
+                    className="w-full h-full p-3 sm:p-4 text-left rounded-xl sm:rounded-2xl bg-[var(--glass-bg)] border border-[var(--glass-border)] hover:border-[var(--accent-color)] text-xs cursor-pointer transition-all hover:scale-[1.01] shadow-sm flex flex-col sm:flex-row items-start sm:items-center justify-between group disabled:opacity-50 disabled:pointer-events-none gap-2 sm:gap-0"
                   >
-                    <div className="space-y-1 pr-4">
+                    <div className="space-y-1 sm:pr-4">
                       <div className="font-bold text-[var(--text-primary)] group-hover:text-[var(--accent-color)] transition-colors flex items-center gap-1.5">
                         <Lightbulb className="w-3.5 h-3.5 shrink-0 text-[#FFC400]" />
                         {preset.label}
                       </div>
-                      <div className="text-[10px] text-[var(--text-secondary)] truncate max-w-sm">
+                      <div className="text-[10px] text-[var(--text-secondary)] line-clamp-2 sm:truncate sm:max-w-sm whitespace-normal sm:whitespace-nowrap">
                         {preset.text}
                       </div>
                     </div>
-                    <ArrowRight className="w-4 h-4 text-[var(--text-secondary)] group-hover:text-[var(--accent-color)] group-hover:translate-x-0.5 transition-all shrink-0" />
+                    <ArrowRight className="hidden sm:block w-4 h-4 text-[var(--text-secondary)] group-hover:text-[var(--accent-color)] group-hover:translate-x-0.5 transition-all shrink-0" />
                   </button>
                 </FadeUp>
               ))}
@@ -259,9 +259,9 @@ export default function CygmaPreviewSection() {
           </div>
 
           {/* Right Side: Glass Chat Console Mock */}
-          <div className="lg:col-span-7">
+          <div className="lg:col-span-7 mt-4 sm:mt-0">
             <FadeUp delay={0.15}>
-              <div className="relative rounded-[2.5rem] bg-[var(--glass-bg)] border border-[var(--glass-border)] shadow-2xl backdrop-blur-md overflow-hidden flex flex-col h-[480px]">
+              <div className="relative rounded-3xl sm:rounded-[2.5rem] bg-[var(--glass-bg)] border border-[var(--glass-border)] shadow-2xl backdrop-blur-md overflow-hidden flex flex-col h-[360px] sm:h-[480px]">
                 {/* Console Header */}
                 <div className="px-6 py-4 border-b border-[var(--glass-border)] flex items-center justify-between bg-slate-500/5 select-none shrink-0">
                   <div className="flex items-center gap-2">

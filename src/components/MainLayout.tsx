@@ -8,13 +8,14 @@ import { useEffect, useState } from "react";
 import { useCygmaWorld } from "@/context/CygmaWorldContext";
 import dynamic from "next/dynamic";
 
-import CustomCursor from "./layout/CustomCursor";
+
 import SmoothScroll from "./layout/SmoothScroll";
 import ConsentBanner from "./layout/ConsentBanner";
 import PreferencesModal from "./layout/PreferencesModal";
 import { useTheme } from "./layout/ThemeContext";
 import { usePerformance } from "@/context/PerformanceContext";
 import CapacitorManager from "./layout/CapacitorManager";
+import Preloader from "./layout/Preloader";
 // Dynamic import for client-only R3F Canvas
 const IntelligenceWorld = dynamic(() => import("@/three/world/IntelligenceWorld"), {
   ssr: false,
@@ -23,62 +24,19 @@ const IntelligenceWorld = dynamic(() => import("@/three/world/IntelligenceWorld"
 export default function MainLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const isAiPage = pathname === "/ai";
-  const { view, isTransitioning, sceneReady, setSceneReady } = useCygmaWorld();
+  const { view, isTransitioning, sceneReady, setSceneReady, appRevealComplete } = useCygmaWorld();
   const { resolvedTheme } = useTheme();
   const { currentProfile } = usePerformance();
   const [showFlash, setShowFlash] = useState(false);
-  const [deferCanvas, setDeferCanvas] = useState(true); // Start deferred to unblock LCP
   const [reducedMotionState, setReducedMotionState] = useState<"user" | "always">("always");
   const [isMobileDevice, setIsMobileDevice] = useState(true); // Optimistic mobile to avoid hydration mismatch
 
   const mainRoutes = ["/", "/about", "/projects", "/products", "/ai", "/login", "/careers", "/contact", "/dashboard", "/admin"];
   const showCanvas = mainRoutes.includes(pathname);
   const isPerformanceLow = currentProfile === "low" || currentProfile === "battery";
-  const shouldRenderCanvas = showCanvas && !isPerformanceLow && !deferCanvas;
+  const shouldRenderCanvas = showCanvas && !isPerformanceLow;
 
-  // Defer canvas initialization until browser is fully loaded and user interacts
-  useEffect(() => {
-    if (typeof window !== "undefined") {
-      let initialized = false;
-      const initCanvas = () => {
-        if (initialized) return;
-        initialized = true;
-        
-        // Use requestIdleCallback to avoid jitter when interaction happens
-        if ("requestIdleCallback" in window) {
-          window.requestIdleCallback(() => setDeferCanvas(false), { timeout: 1000 });
-        } else {
-          setTimeout(() => setDeferCanvas(false), 50);
-        }
-        
-        window.removeEventListener("scroll", initCanvas);
-        window.removeEventListener("touchstart", initCanvas);
-        window.removeEventListener("mousemove", initCanvas);
-        window.removeEventListener("keydown", initCanvas);
-      };
-      
-      const deferInit = () => {
-        window.addEventListener("scroll", initCanvas, { passive: true });
-        window.addEventListener("touchstart", initCanvas, { passive: true });
-        window.addEventListener("mousemove", initCanvas, { passive: true });
-        window.addEventListener("keydown", initCanvas, { passive: true });
-      };
 
-      if (document.readyState === "complete") {
-        deferInit();
-      } else {
-        window.addEventListener("load", deferInit);
-      }
-      
-      return () => {
-        window.removeEventListener("load", deferInit);
-        window.removeEventListener("scroll", initCanvas);
-        window.removeEventListener("touchstart", initCanvas);
-        window.removeEventListener("mousemove", initCanvas);
-        window.removeEventListener("keydown", initCanvas);
-      };
-    }
-  }, []);
 
   // Detect mobile viewport on mount
   useEffect(() => {
@@ -121,7 +79,6 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
       navigator.serviceWorker
         .register("/sw.js")
         .then((registration) => {
-          console.log("VANIKARA SW registered with scope:", registration.scope);
         })
         .catch((error) => {
           console.error("VANIKARA SW registration failed:", error);
@@ -156,11 +113,14 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
   return (
     <MotionConfig reducedMotion={reducedMotionState}>
       <div className="flex flex-col min-h-screen bg-transparent relative">
+        <Preloader />
 
         {/* Global 3D World Scene Backdrop */}
         {shouldRenderCanvas && (
           <>
             <IntelligenceWorld />
+            {/* We no longer overlay black based on sceneReady here because the Preloader covers it. 
+                But we keep it just in case as a fallback background. */}
             <div 
               className={`fixed inset-0 z-0 bg-[#030712] transition-opacity duration-[1500ms] ease-in-out pointer-events-none ${
                 sceneReady ? "opacity-0" : "opacity-100"
@@ -170,7 +130,9 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
         )}
 
         {/* Dynamic UI Wrapper */}
-        <div className="flex flex-col min-h-screen bg-transparent relative w-full z-10">
+        <div className={`flex flex-col min-h-screen bg-transparent relative w-full z-10 transition-opacity duration-1000 ease-in-out ${
+          appRevealComplete ? "opacity-100" : "opacity-0 pointer-events-none"
+        }`}>
           <a
             href="#main-content"
             className="sr-only focus:not-sr-only focus:fixed focus:top-4 focus:left-4 focus:z-50 focus:px-4 focus:py-2 focus:bg-[var(--accent-color)] focus:text-white focus:rounded-xl focus:shadow-lg focus:outline-none"
@@ -180,7 +142,7 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
           <SmoothScroll />
           <ConsentBanner />
           <PreferencesModal />
-          <CustomCursor />
+
           <Navbar />
           <CapacitorManager />
 

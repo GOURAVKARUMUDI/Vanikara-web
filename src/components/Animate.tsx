@@ -34,22 +34,7 @@ export function FadeUp({ children, className = '', delay = 0, y = 28, once = tru
   );
 }
 
-/**
- * FadeIn: Soft opacity reveal on scroll.
- */
-export function FadeIn({ children, className = '', delay = 0, once = true }: Props) {
-  return (
-    <motion.div
-      className={className}
-      initial={{ opacity: 0 }}
-      whileInView={{ opacity: 1 }}
-      transition={{ ...FADE_TRANSITION, delay }}
-      viewport={{ once }}
-    >
-      {children}
-    </motion.div>
-  );
-}
+
 
 interface StaggerProps {
   children: ReactNode;

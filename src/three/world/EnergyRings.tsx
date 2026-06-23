@@ -45,8 +45,8 @@ export default function EnergyRings() {
     const activeTime = activeTimeRef.current;
 
     if (ring1Ref.current) {
-      ring1Ref.current.rotation.x = activeTime * 0.22;
-      ring1Ref.current.rotation.y = activeTime * 0.1;
+      ring1Ref.current.rotation.x = activeTime * 0.08 + Math.sin(activeTime * 0.1) * 0.15;
+      ring1Ref.current.rotation.y = activeTime * 0.04 + Math.cos(activeTime * 0.15) * 0.15;
       if (ring1Ref.current.material) {
         const mat = ring1Ref.current.material as THREE.Material;
         mat.transparent = true;
@@ -54,8 +54,8 @@ export default function EnergyRings() {
       }
     }
     if (ring2Ref.current) {
-      ring2Ref.current.rotation.y = -activeTime * 0.28;
-      ring2Ref.current.rotation.z = activeTime * 0.15;
+      ring2Ref.current.rotation.y = -activeTime * 0.12 + Math.sin(activeTime * 0.12) * 0.15;
+      ring2Ref.current.rotation.z = activeTime * 0.06 + Math.cos(activeTime * 0.18) * 0.15;
       if (ring2Ref.current.material) {
         const mat = ring2Ref.current.material as THREE.Material;
         mat.transparent = true;
@@ -63,8 +63,8 @@ export default function EnergyRings() {
       }
     }
     if (ring3Ref.current) {
-      ring3Ref.current.rotation.x = -activeTime * 0.14;
-      ring3Ref.current.rotation.z = -activeTime * 0.2;
+      ring3Ref.current.rotation.x = -activeTime * 0.06 + Math.sin(activeTime * 0.14) * 0.15;
+      ring3Ref.current.rotation.z = -activeTime * 0.08 + Math.cos(activeTime * 0.1) * 0.15;
       if (ring3Ref.current.material) {
         const mat = ring3Ref.current.material as THREE.Material;
         mat.transparent = true;

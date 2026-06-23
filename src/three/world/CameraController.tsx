@@ -300,13 +300,19 @@ export default function CameraController() {
       targetY = THREE.MathUtils.lerp(startY, targetY, pushProgress);
     }
 
-    // 3. Add slow breathing & drift animations (active only after the push-in is complete)
+    // 3. Add slow breathing & organic pseudo-noise drift (active only after the push-in is complete)
     if (useOrbitDrift && idleActive) {
-      const breathing = Math.sin(state.clock.getElapsedTime() * 0.2) * 0.08;
-      targetZ += breathing;
+      const t = state.clock.getElapsedTime();
+      
+      // Multi-frequency pseudo-noise for non-repeating organic drift
+      const noiseZ = (Math.sin(t * 0.2) + Math.sin(t * 0.31) * 0.5 + Math.sin(t * 0.13) * 0.25) * 0.05;
+      targetZ += noiseZ;
 
-      targetX += Math.sin(state.clock.getElapsedTime() * 0.12) * orbitScaleX;
-      targetY += Math.cos(state.clock.getElapsedTime() * 0.15) * orbitScaleY;
+      const noiseX = (Math.sin(t * 0.12) + Math.cos(t * 0.23) * 0.6) * orbitScaleX * 0.8;
+      const noiseY = (Math.cos(t * 0.15) + Math.sin(t * 0.27) * 0.5) * orbitScaleY * 0.8;
+      
+      targetX += noiseX;
+      targetY += noiseY;
     }
 
     if (useMouseParallax && idleActive) {

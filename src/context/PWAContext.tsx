@@ -89,7 +89,6 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
       if (!isIOSDebug) {
         setInstallPrompt({
           prompt: () => {
-            console.log("[PWA Debug] Native prompt() called.");
           },
           userChoice: Promise.resolve({ outcome: "accepted" })
         });
@@ -119,7 +118,6 @@ export function PWAProvider({ children }: { children: React.ReactNode }) {
       
       // Await user's install preference selection
       const { outcome } = await installPrompt.userChoice;
-      console.log(`[PWA] User response to installation prompt: ${outcome}`);
 
       // Clear the stashed prompt regardless of outcome to avoid calling prompt() on an exhausted object
       setInstallPrompt(null);

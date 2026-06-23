@@ -24,7 +24,7 @@ export function PageContainer({ children, className = "", id }: ContainerProps) 
 export const SectionContainer = React.forwardRef<HTMLElement, ContainerProps>(
   ({ children, className = "", id }, ref) => {
     return (
-      <section id={id} ref={ref} className={`py-12 sm:py-16 md:py-20 lg:py-24 relative w-full ${className}`}>
+      <section id={id} ref={ref} className={`py-8 sm:py-16 md:py-20 lg:py-24 relative w-full ${className}`}>
         {children}
       </section>
     );
@@ -50,7 +50,7 @@ export function HeroContainer({ children, className = "", id }: ContainerProps) 
   return (
     <section
       id={id}
-      className={`relative min-h-[85vh] md:min-h-screen w-full flex flex-col items-center justify-center overflow-hidden pt-28 pb-16 px-4 sm:px-6 lg:px-8 ${className}`}
+      className={`relative min-h-[70vh] md:min-h-screen w-full flex flex-col items-center justify-center overflow-hidden pt-24 pb-8 md:pt-28 md:pb-16 px-4 sm:px-6 lg:px-8 ${className}`}
     >
       {children}
     </section>
@@ -68,13 +68,3 @@ export function FormContainer({ children, className = "", id }: ContainerProps) 
   );
 }
 
-/**
- * DashboardContainer: container constrained to max-w-7xl for complex grids/tables.
- */
-export function DashboardContainer({ children, className = "", id }: ContainerProps) {
-  return (
-    <div id={id} className={`max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 w-full ${className}`}>
-      {children}
-    </div>
-  );
-}

@@ -141,7 +141,7 @@ export default function HeroSection() {
             ========================================== */}
         <motion.div
           layout
-          className="relative flex flex-col items-center select-none mb-6 scale-90"
+          className="relative flex flex-col items-center select-none mb-3 md:mb-6 scale-75 md:scale-90"
           transition={{ duration: 1.0, ease: easeOutExpo }}
         >
           {/* Logo assembly particles (visible only during converge phase) */}
@@ -230,8 +230,8 @@ export default function HeroSection() {
         <div className="flex flex-col items-center w-full z-10 relative">
           {/* Headline */}
           <h1
-            className="font-display font-black leading-[1.1] tracking-tight mb-5 text-[var(--text-primary)] uppercase text-balance max-w-[700px] w-full flex flex-wrap justify-center gap-x-[0.25em]"
-            style={{ fontSize: "clamp(1.8rem, 4.2vw, 3.2rem)" }}
+            className="font-display font-black leading-[1.1] tracking-tight mb-3 md:mb-5 text-[var(--text-primary)] uppercase text-balance max-w-[700px] w-full flex flex-wrap justify-center gap-x-[0.25em]"
+            style={{ fontSize: "clamp(1.5rem, 4.2vw, 3.2rem)" }}
           >
             <span>ENGINEERING</span>
             <span>TOMORROW'S</span>
@@ -248,8 +248,8 @@ export default function HeroSection() {
 
           {/* Supporting Description */}
           <p
-            className="text-[var(--text-secondary)] w-full max-w-[620px] mx-auto mb-8 leading-relaxed font-semibold"
-            style={{ fontSize: "clamp(0.875rem, 1.5vw, 1rem)" }}
+            className="text-[var(--text-secondary)] w-full max-w-[620px] mx-auto mb-6 md:mb-8 leading-relaxed font-semibold px-2"
+            style={{ fontSize: "clamp(0.8rem, 1.5vw, 1rem)" }}
           >
             VANIKARA Intelligence Private Limited is an incorporated Indian technology company engineering high-performance AI layers, unified student systems, and secure cloud platforms.
           </p>

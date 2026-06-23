@@ -13,9 +13,7 @@ const apiKey = process.env.OPENAI_API_KEY;
 // Startup diagnostic — log key availability, never the key itself
 if (typeof process !== 'undefined' && process.env) {
   if (apiKey) {
-    console.log(
-      `[CYGMA][${new Date().toISOString()}][OpenAI Client] ✓ OPENAI_API_KEY is configured (${apiKey.length} chars, prefix: ${apiKey.slice(0, 7)}...)`
-    );
+    // API key is set
   } else {
     console.warn(
       `[CYGMA][${new Date().toISOString()}][OpenAI Client] ✗ OPENAI_API_KEY is NOT set. AI features will be unavailable.`

@@ -37,20 +37,22 @@ export default function WhyChooseUs() {
             </FadeUp>
           </div>
 
-          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-6">
+          <div className="lg:col-span-7 grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6 mt-4 sm:mt-0">
             {VALUES.map((val, i) => (
               <FadeUp key={val.title} delay={i * 0.08}>
                 <Card hover className="h-full">
-                  <CardBody className="space-y-3">
-                    <div className="w-10 h-10 rounded-xl bg-slate-500/5 flex items-center justify-center">
+                  <CardBody className="flex flex-row sm:flex-col gap-4 p-4 sm:p-6 space-y-0 sm:space-y-3">
+                    <div className="w-10 h-10 rounded-xl bg-slate-500/5 flex items-center justify-center shrink-0">
                       {val.icon}
                     </div>
-                    <h3 className="font-display font-bold text-base text-[var(--text-primary)]">
-                      {val.title}
-                    </h3>
-                    <p className="text-xs text-[var(--text-secondary)] leading-relaxed">
-                      {val.desc}
-                    </p>
+                    <div>
+                      <h3 className="font-display font-bold text-base text-[var(--text-primary)] mb-1 sm:mb-0">
+                        {val.title}
+                      </h3>
+                      <p className="text-[11px] sm:text-xs text-[var(--text-secondary)] leading-relaxed line-clamp-2 sm:line-clamp-none">
+                        {val.desc}
+                      </p>
+                    </div>
                   </CardBody>
                 </Card>
               </FadeUp>

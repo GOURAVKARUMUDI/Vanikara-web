@@ -126,7 +126,7 @@ export default function AIPlanet() {
     if (coreRef.current) {
       // Scale is modulated by reveal progress
       coreRef.current.scale.set(scale, scale, scale);
-      coreRef.current.rotation.y = time * 0.08 * config.orbitSpeedMult;
+      coreRef.current.rotation.y = time * 0.03 * config.orbitSpeedMult; // Slowed down by ~60%
       coreRef.current.rotation.x = 0;
       coreRef.current.position.y = 0.2;
     }
@@ -173,9 +173,12 @@ export default function AIPlanet() {
     }
 
     if (glowRef.current) {
-      const pulseRate = view === "success" ? 8.0 : 1.8;
-      const pulseAmp = view === "success" ? 0.2 : 0.05;
-      const pulse = (1.0 + Math.sin(time * pulseRate * config.orbitSpeedMult) * pulseAmp) * currentGlowScale.current;
+      const pulseRate = view === "success" ? 6.0 : 1.2; // Softer breathing rate
+      const pulseAmp = view === "success" ? 0.15 : 0.03; // Softer breathing amplitude
+      // Multi-frequency pulse for organic breathing
+      const organicPulse = (Math.sin(time * pulseRate * config.orbitSpeedMult) + Math.sin(time * pulseRate * 0.43) * 0.4) * pulseAmp;
+      const pulse = (1.0 + organicPulse) * currentGlowScale.current;
+      
       glowRef.current.scale.set(pulse, pulse, pulse);
       if (glowRef.current.material && !Array.isArray(glowRef.current.material)) {
         (glowRef.current.material as THREE.Material).opacity = currentGlowOpacity.current * revealOpacity;
@@ -202,8 +205,8 @@ export default function AIPlanet() {
       }
       const activePTime = innerParticlesRef.current.userData.time;
 
-      innerParticlesRef.current.rotation.y = -activePTime * 0.12 * config.orbitSpeedMult;
-      innerParticlesRef.current.rotation.x = activePTime * 0.04 * config.orbitSpeedMult;
+      innerParticlesRef.current.rotation.y = -activePTime * 0.05 * config.orbitSpeedMult; // Organic slow rotation
+      innerParticlesRef.current.rotation.x = activePTime * 0.02 * config.orbitSpeedMult;
       if (innerParticlesRef.current.material && !Array.isArray(innerParticlesRef.current.material)) {
         (innerParticlesRef.current.material as THREE.Material).opacity = (isDark ? 0.95 : 0.65) * revealOpacity;
       }

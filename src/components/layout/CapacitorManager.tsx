@@ -22,7 +22,6 @@ export default function CapacitorManager() {
     const hideSplash = async () => {
       try {
         await SplashScreen.hide();
-        console.log("[Capacitor] Branded Native Splash Screen hidden successfully.");
       } catch (err) {
         console.warn("[Capacitor] SplashScreen.hide warning:", err);
       }

@@ -27,6 +27,8 @@ interface CygmaWorldContextType {
   setIsTransitioning: (transitioning: boolean) => void;
   sceneReady: boolean;
   setSceneReady: (ready: boolean) => void;
+  appRevealComplete: boolean;
+  setAppRevealComplete: (complete: boolean) => void;
 }
 
 const CygmaWorldContext = createContext<CygmaWorldContextType | undefined>(undefined);
@@ -56,6 +58,7 @@ export function CygmaWorldProvider({ children }: { children: React.ReactNode }) 
   const [navbarVisible, setNavbarVisible] = useState(() => getInitialNavbarVisible(pathname));
   const [isTransitioning, setIsTransitioning] = useState(false);
   const [sceneReady, setSceneReady] = useState(false);
+  const [appRevealComplete, setAppRevealComplete] = useState(false);
 
   const [prevPathname, setPrevPathname] = useState(pathname);
 
@@ -109,12 +112,15 @@ export function CygmaWorldProvider({ children }: { children: React.ReactNode }) 
     setIsTransitioning,
     sceneReady,
     setSceneReady,
+    appRevealComplete,
+    setAppRevealComplete,
   }), [
     view,
     isSuccess,
     navbarVisible,
     isTransitioning,
     sceneReady,
+    appRevealComplete,
   ]);
 
   return (

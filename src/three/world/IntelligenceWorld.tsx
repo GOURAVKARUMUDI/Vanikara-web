@@ -39,9 +39,9 @@ function SceneInitializer() {
       compiledRef.current = true;
     }
 
-    if (frameCountRef.current < 3) {
+    if (frameCountRef.current < 5) {
       frameCountRef.current++;
-      if (frameCountRef.current === 3) {
+      if (frameCountRef.current === 5) {
         setSceneReady(true);
       }
     }
@@ -55,7 +55,7 @@ function SceneInitializer() {
  * Anchors the entire website's visual identity.
  */
 export default function IntelligenceWorld() {
-  const { view, sceneReady } = useCygmaWorld();
+  const { view } = useCygmaWorld();
   const { resolvedTheme } = useTheme();
   const { config } = usePerformance();
 
@@ -106,8 +106,8 @@ export default function IntelligenceWorld() {
           <AIPlanet />
         </Suspense>
 
-        {/* Bloom post-processing - Defer until sceneReady to keep postprocessing out of critical FCP */}
-        {config.usePostProcessing && sceneReady && (
+        {/* Bloom post-processing - Compiles immediately during Preloader to prevent popping */}
+        {config.usePostProcessing && (
           <Suspense fallback={null}>
             <PostProcessingEffects bloomIntensity={bloomIntensity} config={config} />
           </Suspense>

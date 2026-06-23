@@ -61,6 +61,7 @@ export default function ThemeLighting() {
     }
     const timeSinceReady = revealProgress.current;
     const revealOpacity = Math.min(1.0, timeSinceReady / 1.5);
+    const idleActive = timeSinceReady >= 3.0;
 
     // 1. Compute view-based lighting multipliers
     let modifier = 1.0;
@@ -114,6 +115,29 @@ export default function ThemeLighting() {
         activePreset.spotIntensity * modifier * spotModifier * revealOpacity,
         lerpSpeed
       );
+    }
+
+    // 2. Dynamic orbital lighting
+    if (idleActive) {
+      const t = state.clock.getElapsedTime();
+      
+      // Directional light slowly orbits the top hemisphere
+      if (dir) {
+        dir.position.x = -6 + Math.sin(t * 0.1) * 2;
+        dir.position.z = -4 + Math.cos(t * 0.1) * 2;
+      }
+      
+      // Point light slowly shifts to cast dynamic rim highlights
+      if (point) {
+        point.position.x = Math.sin(t * 0.15) * 3;
+        point.position.z = 3 + Math.cos(t * 0.12) * 2;
+      }
+      
+      // Spot light drifts subtly to animate specular reflections
+      if (spot) {
+        spot.position.x = 9 + Math.sin(t * 0.08) * 1.5;
+        spot.position.y = -5.5 + Math.cos(t * 0.05) * 1.5;
+      }
     }
   });
 

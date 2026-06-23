@@ -33,9 +33,9 @@ export default function TechStackSection() {
           </FadeUp>
         </div>
 
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="flex sm:grid overflow-x-auto sm:overflow-visible snap-x snap-mandatory sm:snap-none grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 pb-4 sm:pb-0 -mx-4 px-4 sm:mx-0 sm:px-0 hide-scrollbar">
           {TECHS.map((tech, i) => (
-            <FadeUp key={tech.name} delay={i * 0.05}>
+            <FadeUp key={tech.name} delay={i * 0.05} className="w-[85vw] sm:w-auto shrink-0 snap-center sm:snap-align-none">
               <Card hover className="h-full">
                 <CardBody className="flex flex-col justify-between h-full">
                   <div>

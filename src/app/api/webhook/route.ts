@@ -63,7 +63,6 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: error.message }, { status: 500 });
     }
 
-    console.log("Payment success and subscription updated for user:", userId);
   }
 
   return NextResponse.json({ received: true });
