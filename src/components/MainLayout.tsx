@@ -110,6 +110,15 @@ export default function MainLayout({ children }: { children: React.ReactNode }) 
     }
   }, [view]);
 
+  // Environment Variable Production Guard
+  useEffect(() => {
+    if (process.env.NODE_ENV === "production" && typeof window !== "undefined") {
+      if (!process.env.NEXT_PUBLIC_SUPABASE_URL || !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY) {
+        console.error("[CYGMA FATAL] Missing required NEXT_PUBLIC_SUPABASE variables in production environment. Features will fail.");
+      }
+    }
+  }, []);
+
   return (
     <MotionConfig reducedMotion={reducedMotionState}>
       <div className="flex flex-col min-h-screen bg-transparent relative">

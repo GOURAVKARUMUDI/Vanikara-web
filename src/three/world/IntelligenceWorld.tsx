@@ -9,6 +9,7 @@ import { usePerformance } from "@/context/PerformanceContext";
 
 // Lazy-loaded post-processing effects
 const PostProcessingEffects = lazy(() => import("./PostProcessingEffects"));
+import { ThreeErrorBoundary } from "@/components/ThreeErrorBoundary";
 
 // Child rigs & components (Static for fast camera/lighting setup)
 import CameraController from "./CameraController";
@@ -51,6 +52,17 @@ function SceneInitializer() {
 }
 
 /**
+ * Fallback Scene to unblock loader if chunks fail to load
+ */
+function FallbackScene() {
+  const { setSceneReady } = useCygmaWorld();
+  useEffect(() => {
+    setSceneReady(true);
+  }, [setSceneReady]);
+  return null;
+}
+
+/**
  * IntelligenceWorld: The top-level 3D wrapper rendering a persistent Canvas.
  * Anchors the entire website's visual identity.
  */
@@ -87,30 +99,34 @@ export default function IntelligenceWorld() {
         <ThemeLighting />
 
         {/* Wrap massive components and initializer in Suspense so gl.compile waits for chunks */}
-        <Suspense fallback={null}>
-          <SceneInitializer />
+        <ThreeErrorBoundary fallback={<FallbackScene />}>
+          <Suspense fallback={null}>
+            <SceneInitializer />
 
-          {/* Neural Network Segments Grid */}
-          <NeuralNetwork key={`neural-net-${config.neuralNetworkNodeCount}`} nodeCount={config.neuralNetworkNodeCount} />
+            {/* Neural Network Segments Grid */}
+            <NeuralNetwork key={`neural-net-${config.neuralNetworkNodeCount}`} nodeCount={config.neuralNetworkNodeCount} />
 
-          {/* 600+ Space dust energy particles */}
-          <ParticleField key={`particles-${config.maxParticles}`} count={config.maxParticles} />
+            {/* 600+ Space dust energy particles */}
+            <ParticleField key={`particles-${config.maxParticles}`} count={config.maxParticles} />
 
-          {/* Orbital rings */}
-          <EnergyRings />
+            {/* Orbital rings */}
+            <EnergyRings />
 
-          {/* Floating crystal dodecahedrons */}
-          <GlassObjects key={`glass-objects-${config.glassObjectsCount}`} />
+            {/* Floating crystal dodecahedrons */}
+            <GlassObjects key={`glass-objects-${config.glassObjectsCount}`} />
 
-          {/* Core Glass Sphere */}
-          <AIPlanet />
-        </Suspense>
+            {/* Core Glass Sphere */}
+            <AIPlanet />
+          </Suspense>
+        </ThreeErrorBoundary>
 
         {/* Bloom post-processing - Compiles immediately during Preloader to prevent popping */}
         {config.usePostProcessing && (
-          <Suspense fallback={null}>
-            <PostProcessingEffects bloomIntensity={bloomIntensity} config={config} />
-          </Suspense>
+          <ThreeErrorBoundary>
+            <Suspense fallback={null}>
+              <PostProcessingEffects bloomIntensity={bloomIntensity} config={config} />
+            </Suspense>
+          </ThreeErrorBoundary>
         )}
       </Canvas>
 

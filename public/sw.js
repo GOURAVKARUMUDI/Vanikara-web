@@ -1,5 +1,5 @@
 // VANIKARA Service Worker - PWA Caching Strategy
-const CACHE_NAME = 'vanikara-cache-v2';
+const CACHE_NAME = 'vanikara-cache-v3';
 const ASSETS = [
   '/',
   '/manifest.json',
@@ -35,12 +35,19 @@ self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
 
   const url = new URL(event.request.url);
+  
+  // CRITICAL HOTFIX: Bypass SW for all Webpack / Turbopack chunks.
+  // Next.js chunks are immutable and hashed. Stale-while-revalidate will cause
+  // ChunkLoadErrors in production when Vercel deletes old deployment chunks.
+  if (url.pathname.startsWith('/_next/')) {
+    return;
+  }
+
   // Bypass SW for admin panel, client portal, API routes, and Next.js data requests
   if (
     url.pathname.startsWith('/admin') ||
     url.pathname.startsWith('/dashboard') ||
-    url.pathname.startsWith('/api/') ||
-    url.pathname.startsWith('/_next/data/')
+    url.pathname.startsWith('/api/')
   ) {
     return;
   }
